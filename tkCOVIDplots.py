@@ -2,6 +2,10 @@
 import tkinter as tk
 import pandas as pd
 import sys
+import numpy as np
+#from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
 
 ############################################################
@@ -65,9 +69,12 @@ def doPlots( myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLo
                all_states_deaths[iState].insert( 0, 0 )
                all_states_deathrates[iState].insert( 0, 0.0 )
 
-    from matplotlib import pyplot as plt
-    plotWidth = 10
-    plotHeight = 6
+    # Now convert string dates to python date objects using numpy
+    # This will allow nice formatting of the date axis
+    all_dates = mdates.num2date( mdates.datestr2num(all_dates) )
+    
+    plotWidth = 8.0
+    plotHeight = 6.0
 
     iFig = 0
     # Calculate us total and plot
@@ -90,28 +97,28 @@ def doPlots( myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLo
             if ( myLinearCheck.get() ):
                 plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
                 iFig += 1
-                plt.xlabel('date')
-                plt.xticks(rotation=90,fontsize=5)
+                plt.xticks(rotation=45)
                 plt.ylim(0,max(us_cases)*1.05)
                 plt.grid()
                 plt.plot(all_dates,us_cases, color='green', label='US confirmed, number')
                 plt.plot(all_dates,us_deaths, color='red', label='US deaths, number')
                 plt.plot(all_dates,us_deathrates, color='orange', label='US deathrate, %')
                 plt.legend(loc="upper left")
+                plt.tight_layout()
                 #plt.show()
 
             # Semilog
             if ( myLogCheck.get() ):
                 plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
                 iFig += 1
-                plt.xlabel('date')
-                plt.xticks(rotation=90,fontsize=5)
+                plt.xticks(rotation=45)
                 plt.grid()
                 plt.plot(all_dates,us_cases, color='green', label='US confirmed, number')
                 plt.plot(all_dates,us_deaths, color='red', label='US deaths, number')
                 plt.plot(all_dates,us_deathrates, color='orange', label='US deathrate, %')
                 plt.legend(loc="upper left")
                 plt.yscale('log')
+                plt.tight_layout()
                 #plt.show()
 
         # US new cases bar chart
@@ -131,14 +138,14 @@ def doPlots( myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLo
                 nineDayCases.append( sum( us_new_cases[i-4:i+4] )/9.0 )
             plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
             iFig += 1
-            plt.xlabel('date')
-            plt.ylabel('US new cases')
-            plt.xticks(rotation=90,fontsize=5)
-            plt.bar( all_dates,us_new_cases, tick_label=all_dates, label='daily' )
+            plt.ylabel('US New Cases')
+            plt.xticks(rotation=45)
+            plt.bar( all_dates,us_new_cases, label='daily' )
             plt.plot(fiveDayDates,fiveDayCases,'r',label='5-day')
             plt.plot(nineDayDates,nineDayCases,'orange',label='9-day')
             plt.legend(loc="upper left")
             plt.grid(axis='y')
+            plt.tight_layout()
             #plt.show()
 
         # US new deaths bar chart
@@ -158,14 +165,14 @@ def doPlots( myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLo
                 nineDayDeaths.append( sum( us_new_deaths[i-4:i+4] )/9.0 )
             plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
             iFig += 1
-            plt.xlabel('date')
-            plt.ylabel('US new deaths')
-            plt.xticks(rotation=90,fontsize=5)
-            plt.bar( all_dates,us_new_deaths, tick_label=all_dates, label='daily' )
+            plt.ylabel('US New Deaths')
+            plt.xticks(rotation=45)
+            plt.bar( all_dates,us_new_deaths, label='daily' )
             plt.plot(fiveDayDates,fiveDayDeaths,'r',label='5-day')
             plt.plot(nineDayDates,nineDayDeaths,'orange',label='9-day')
             plt.legend(loc="upper left")
             plt.grid(axis='y')
+            plt.tight_layout()
             #plt.show()
 
     for state in finalDesiredStates:
@@ -182,7 +189,7 @@ def doPlots( myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLo
                     trimmed_cases.append(cases)
                     trimmed_deaths.append(deaths)
                     trimmed_deathrate.append(deathrate)
-                print( "\nPlotting",state,"data" )
+#                print( "\nPlotting",state,"data" )
                 # Set up the graph
                 caseLabel=state+' confirmed, number'
                 deathLabel=state+' deaths, number'
@@ -192,8 +199,7 @@ def doPlots( myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLo
                     if ( myLinearCheck.get() ):
                         plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
                         iFig += 1
-                        plt.xlabel('date')
-                        plt.xticks(rotation=90,fontsize=5)
+                        plt.xticks(rotation=45)
                         plt.ylim(0,max(trimmed_cases)*1.05)
                         plt.grid()
                         caseLabel=state+' confirmed, number'
@@ -203,20 +209,21 @@ def doPlots( myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLo
                         plt.plot(trimmed_dates,trimmed_deaths, color='red', label=deathLabel )
                         plt.plot(trimmed_dates,trimmed_deathrate, color='orange', label=rateLabel )
                         plt.legend(loc="upper left")
+                        plt.tight_layout()
                         #plt.show()
 
                     # Semilog
                     if ( myLogCheck.get() ):
                         plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
                         iFig += 1
-                        plt.xlabel('date')
-                        plt.xticks(rotation=90,fontsize=5)
+                        plt.xticks(rotation=45)
                         plt.grid()
                         plt.plot(trimmed_dates,trimmed_cases, color='green', label=caseLabel )
                         plt.plot(trimmed_dates,trimmed_deaths, color='red', label=deathLabel )
                         plt.plot(trimmed_dates,trimmed_deathrate, color='orange', label=rateLabel )
                         plt.legend(loc="upper left")
                         plt.yscale('log')
+                        plt.tight_layout()
                         #plt.show()
 
                 # State new cases bar chart
@@ -235,17 +242,17 @@ def doPlots( myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLo
                     for i in range( 4,len(new_cases)-4 ):
                         nineDayDates.append( trimmed_dates[i] )
                         nineDayCases.append( sum( new_cases[i-4:i+4] )/9.0 )
-                    caseLabel=state+' new cases'
+                    caseLabel=state+' New Cases'
                     plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
                     iFig += 1
                     plt.grid(axis='y')
-                    plt.xlabel('date')
                     plt.ylabel(caseLabel)
-                    plt.xticks(rotation=90,fontsize=5)
-                    plt.bar( trimmed_dates, new_cases, tick_label=trimmed_dates, label='daily' )
+                    plt.xticks(rotation=45)
+                    plt.bar( trimmed_dates, new_cases, label='daily' )
                     plt.plot(fiveDayDates,fiveDayCases,'r', label='5-day')
                     plt.plot(nineDayDates,nineDayCases,'orange',label='9-day')
                     plt.legend(loc="upper left")
+                    plt.tight_layout()
                     #plt.show()
 
                 # State new deaths bar chart
@@ -264,17 +271,17 @@ def doPlots( myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLo
                     for i in range( 4,len(new_deaths)-4 ):
                         nineDayDates.append( trimmed_dates[i] )
                         nineDayDeaths.append( sum( new_deaths[i-4:i+4] )/9.0 )
-                    deathLabel=state+' new deaths'
+                    deathLabel=state+' New Deaths'
                     plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
                     iFig += 1
                     plt.grid(axis='y')
-                    plt.xlabel('date')
                     plt.ylabel(deathLabel)
-                    plt.xticks(rotation=90,fontsize=5)
-                    plt.bar( trimmed_dates, new_deaths, tick_label=trimmed_dates, label='daily' )
+                    plt.xticks(rotation=45)
+                    plt.bar( trimmed_dates, new_deaths, label='daily' )
                     plt.plot(fiveDayDates,fiveDayDeaths,'r', label='5-day')
                     plt.plot(nineDayDates,nineDayDeaths,'orange',label='9-day')
                     plt.legend(loc="upper left")
+                    plt.tight_layout()
                     #plt.show()
 #                sys.stdout.write( "{:>10s} {:>7s} {:>7s} {:>7s} {:>7s}\n".format( "date", "cases", "deaths", "ncases", "ndeaths" ) )
 #                for date,case,death,ncase,ndeath in zip( trimmed_dates, trimmed_cases, trimmed_deaths, new_cases, new_deaths ):

@@ -8,4 +8,8 @@ check boxes. Everytime you click the doPlots button the data is
 fetched anew and all plots are sent to the screen at the same time.
 You must close each plot individually.
 
+Since there are already so many of these COVID-19 plotters available
+I make no copyright claim. You are free to use, modify, pass around,
+incorporate without licensing issues.
+
 
