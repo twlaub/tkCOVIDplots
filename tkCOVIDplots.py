@@ -11,8 +11,26 @@ import matplotlib.dates as mdates
 ############################################################
 #  Code for what the button does
 ############################################################
+def dayAveraging( mynDays, myList ):
+    halfDays = mynDays//2  # integer division
+    averagedDayList=[]
+    sevenDayCases=[]
+    for i in range( halfDays ):
+        averagedDayList.append( sum( myList[0:(halfDays+1+i)] )/float(halfDays+1+i) )
+#        print( i )
+#        print( myList[0:(halfDays+1+i)] )
+#        print( sum( myList[0:(halfDays+1+i)] ), sum( myList[0:(halfDays+1+i)] )/float(halfDays+1+i) )
+    for i in range( halfDays,len(myList)-halfDays ):
+        averagedDayList.append( sum( myList[i-halfDays:i+halfDays] )/mynDays )
+    for i in range( halfDays,0,-1 ):
+        averagedDayList.append( sum( myList[(-1*(i+halfDays+1)):-1] )/float(i+halfDays) )
+#        print( i )
+#        print( myList[(-1*(i+halfDays+1)):-1] )
+#        print( sum( myList[(-1*(i+halfDays+1)):-1] ), sum( myList[(-1*(i+halfDays+1)):-1] )/float(i+halfDays) )
+    return averagedDayList
+
+
 def doPlots( myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLogCheck, myCasesCheck, myDeathsCheck, myAverageCheck ):
-#    import pandas as pd
     # Get desired states
     finalDesiredStates = []
     for iState in range( len(myStatesCheck) ):
@@ -28,7 +46,7 @@ def doPlots( myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLo
     if ( newStates != myStates ):
         # Issue warning
         tk.tkMessageBox.showinfo( "Warning", "Available states has changed.\nRecommend restarting application." )
-    
+
     all_states_cases=[]
     all_states_deaths=[]
     all_states_deathrates=[]
@@ -72,9 +90,10 @@ def doPlots( myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLo
     # Now convert string dates to python date objects using numpy
     # This will allow nice formatting of the date axis
     all_dates = mdates.num2date( mdates.datestr2num(all_dates) )
-    
+
     plotWidth = 8.0
     plotHeight = 6.0
+    averageColor=[ 'red', 'magenta', 'orange' ]
 
     iFig = 0
     # Calculate us total and plot
@@ -121,79 +140,54 @@ def doPlots( myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLo
                 plt.tight_layout()
                 #plt.show()
 
-        # US new cases bar chart
+        # US new cases chart
         if ( myCasesCheck.get() ):
             us_new_cases = [us_cases[0]]
+
             for cases1,cases2 in zip( us_cases[:-1], us_cases[1:] ):
                 us_new_cases.append( cases2 - cases1 )
-            # Get 5-day moving average of new cases
-            if ( myAverageCheck[0].get() ):
-                fiveDayDates=[]
-                fiveDayCases=[]
-                for i in range( 2,len(us_new_cases)-2 ):
-                    fiveDayDates.append( all_dates[i] )
-                    fiveDayCases.append( sum( us_new_cases[i-2:i+2] )/5.0 )
-            # Get 7-day moving average of new cases
-            if ( myAverageCheck[1].get() ):
-                sevenDayDates=[]
-                sevenDayCases=[]
-                for i in range( 3,len(us_new_cases)-3 ):
-                    sevenDayDates.append( all_dates[i] )
-                    sevenDayCases.append( sum( us_new_cases[i-3:i+3] )/7.0 )
-            # Get 9-day moving average of new cases
-            if ( myAverageCheck[2].get() ):
-                nineDayDates=[]
-                nineDayCases=[]
-                for i in range( 4,len(us_new_cases)-4 ):
-                    nineDayDates.append( all_dates[i] )
-                    nineDayCases.append( sum( us_new_cases[i-4:i+4] )/9.0 )
+            
             plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
             iFig += 1
             plt.ylabel('US New Cases')
             plt.xticks(rotation=45)
-            plt.bar( all_dates,us_new_cases, label='daily' )
-            if ( myAverageCheck[0].get() ): plt.plot(fiveDayDates,fiveDayCases,'r',label='5-day')
-            if ( myAverageCheck[1].get() ): plt.plot(sevenDayDates,sevenDayCases,'magenta',label='7-day')
-            if ( myAverageCheck[2].get() ): plt.plot(nineDayDates,nineDayCases,'orange',label='9-day')
+            plt.bar( all_dates, us_new_cases, label='daily' )
+
+            # Get 5,7,9-day moving average of new cases
+            dayAverageDates = all_dates
+            for iDay in range(3):
+                if ( myAverageCheck[iDay].get() ):
+#                    print( (2*iDay+5),"day average" )            
+                    dayAverage = dayAveraging( (2*iDay+5), us_new_cases )
+                    labelText = str((2*iDay+5))+"-day"
+                    plt.plot( dayAverageDates, dayAverage, averageColor[iDay], label=labelText )
+
             plt.legend(loc="upper left")
             plt.grid(axis='y')
             plt.tight_layout()
             #plt.show()
 
-        # US new deaths bar chart
+        # US new deaths chart
         if ( myDeathsCheck.get() ):
             us_new_deaths = [us_deaths[0]]
             for deaths1,deaths2 in zip( us_deaths[:-1], us_deaths[1:] ):
                 us_new_deaths.append( deaths2 - deaths1 )
-            if ( myAverageCheck[0].get() ):
-            # Get 5-day moving average of new deaths
-                fiveDayDates=[]
-                fiveDayDeaths=[]
-                for i in range( 2,len(us_new_deaths)-2 ):
-                    fiveDayDates.append( all_dates[i] )
-                    fiveDayDeaths.append( sum( us_new_deaths[i-2:i+2] )/5.0 )
-            # Get 7-day moving average of new deaths
-            if ( myAverageCheck[1].get() ):
-                sevenDayDates=[]
-                sevenDayDeaths=[]
-                for i in range( 3,len(us_new_deaths)-3 ):
-                    sevenDayDates.append( all_dates[i] )
-                    sevenDayDeaths.append( sum( us_new_deaths[i-3:i+3] )/7.0 )
-            # Get 9-day moving average of new deaths
-            if ( myAverageCheck[2].get() ):
-                nineDayDates=[]
-                nineDayDeaths=[]
-                for i in range( 4,len(us_new_cases)-4 ):
-                    nineDayDates.append( all_dates[i] )
-                    nineDayDeaths.append( sum( us_new_deaths[i-4:i+4] )/9.0 )
+
             plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
             iFig += 1
             plt.ylabel('US New Deaths')
             plt.xticks(rotation=45)
             plt.bar( all_dates,us_new_deaths, label='daily' )
-            if ( myAverageCheck[0].get() ): plt.plot(fiveDayDates,fiveDayDeaths,'r',label='5-day')
-            if ( myAverageCheck[1].get() ): plt.plot(sevenDayDates,sevenDayDeaths,'magenta',label='7-day')
-            if ( myAverageCheck[2].get() ): plt.plot(nineDayDates,nineDayDeaths,'orange',label='9-day')
+
+            # Get 5,7,9-day moving average of new deaths
+            dayAverageDates = all_dates
+            for iDay in range(3):
+                if ( myAverageCheck[iDay].get() ):
+#                    print( (2*iDay+5),"day average" )            
+                    dayAverage = dayAveraging( (2*iDay+5), us_new_deaths )
+                    labelText = str((2*iDay+5))+"-day"
+                    plt.plot( dayAverageDates, dayAverage, averageColor[iDay], label=labelText )
+
             plt.legend(loc="upper left")
             plt.grid(axis='y')
             plt.tight_layout()
@@ -250,32 +244,11 @@ def doPlots( myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLo
                         plt.tight_layout()
                         #plt.show()
 
-                # State new cases bar chart
+                # State new cases chart
                 if ( myCasesCheck.get() ):
                     new_cases = [trimmed_cases[0]]
                     for cases1,cases2 in zip( trimmed_cases[0:-1], trimmed_cases[1:] ):
                         new_cases.append( cases2 - cases1 )
-                    # Get 5-day moving average of new cases
-                    if ( myAverageCheck[0].get() ):
-                        fiveDayDates=[]
-                        fiveDayCases=[]
-                        for i in range( 2,len(new_cases)-2 ):
-                            fiveDayDates.append( trimmed_dates[i] )
-                            fiveDayCases.append( sum( new_cases[i-2:i+2] )/5.0 )
-                    # Get 7-day moving average of new cases
-                    if ( myAverageCheck[1].get() ):
-                        sevenDayDates=[]
-                        sevenDayCases=[]
-                        for i in range( 3,len(new_cases)-3 ):
-                            sevenDayDates.append( trimmed_dates[i] )
-                            sevenDayCases.append( sum( new_cases[i-3:i+3] )/7.0 )
-                    # Get 9-day moving average of new cases
-                    if ( myAverageCheck[2].get() ):
-                        nineDayDates=[]
-                        nineDayCases=[]
-                        for i in range( 4,len(new_cases)-4 ):
-                            nineDayDates.append( trimmed_dates[i] )
-                            nineDayCases.append( sum( new_cases[i-4:i+4] )/9.0 )
                     caseLabel=state+' New Cases'
                     plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
                     iFig += 1
@@ -283,38 +256,25 @@ def doPlots( myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLo
                     plt.ylabel(caseLabel)
                     plt.xticks(rotation=45)
                     plt.bar( trimmed_dates, new_cases, label='daily' )
-                    if ( myAverageCheck[0].get() ): plt.plot(fiveDayDates,fiveDayCases,'r',label='5-day')
-                    if ( myAverageCheck[1].get() ): plt.plot(sevenDayDates,sevenDayCases,'magenta',label='7-day')
-                    if ( myAverageCheck[2].get() ): plt.plot(nineDayDates,nineDayCases,'orange',label='9-day')
+                     
+                    # Get 5,7,9-day moving average of new cases
+                    dayAverageDates = trimmed_dates
+                    for iDay in range(3):
+                        if ( myAverageCheck[iDay].get() ):
+#                            print( (2*iDay+5),"day average" )            
+                            dayAverage = dayAveraging( (2*iDay+5), new_cases )
+                            labelText = str((2*iDay+5))+"-day"
+                            plt.plot( dayAverageDates, dayAverage, averageColor[iDay], label=labelText )
+
                     plt.legend(loc="upper left")
                     plt.tight_layout()
                     #plt.show()
 
-                # State new deaths bar chart
+                # State new deaths chart
                 if ( myDeathsCheck.get() ):
                     new_deaths = [trimmed_deaths[0]]
                     for deaths1,deaths2 in zip( trimmed_deaths[:-1], trimmed_deaths[1:] ):
                         new_deaths.append( deaths2 - deaths1 )
-                    # Get 5-day moving average of new deaths
-                    if ( myAverageCheck[0].get() ):
-                        fiveDayDates=[]
-                        fiveDayDeaths=[]
-                        for i in range( 2,len(new_deaths)-2 ):
-                            fiveDayDates.append( trimmed_dates[i] )
-                            fiveDayDeaths.append( sum( new_deaths[i-2:i+2] )/5.0 )
-                    # Get 7-day moving average of new deaths
-                    if ( myAverageCheck[1].get() ):
-                        sevenDayDates=[]
-                        sevenDayDeaths=[]
-                        for i in range( 3,len(new_cases)-3 ):
-                            sevenDayDates.append( trimmed_dates[i] )
-                            sevenDayDeaths.append( sum( new_deaths[i-3:i+3] )/7.0 )
-                    if ( myAverageCheck[2].get() ):
-                        nineDayDates=[]
-                        nineDayDeaths=[]
-                        for i in range( 4,len(new_deaths)-4 ):
-                            nineDayDates.append( trimmed_dates[i] )
-                            nineDayDeaths.append( sum( new_deaths[i-4:i+4] )/9.0 )
                     deathLabel=state+' New Deaths'
                     plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
                     iFig += 1
@@ -322,23 +282,27 @@ def doPlots( myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLo
                     plt.ylabel(deathLabel)
                     plt.xticks(rotation=45)
                     plt.bar( trimmed_dates, new_deaths, label='daily' )
-                    if ( myAverageCheck[0].get() ): plt.plot(fiveDayDates,fiveDayDeaths,'r',label='5-day')
-                    if ( myAverageCheck[1].get() ): plt.plot(sevenDayDates,sevenDayDeaths,'magenta',label='7-day')
-                    if ( myAverageCheck[2].get() ): plt.plot(nineDayDates,nineDayDeaths,'orange',label='9-day')
+                     
+                    # Get 5,7,9-day moving average of new deaths
+                    dayAverageDates = trimmed_dates
+                    for iDay in range(3):
+                        if ( myAverageCheck[iDay].get() ):
+#                            print( (2*iDay+5),"day average" )            
+                            dayAverage = dayAveraging( (2*iDay+5), new_deaths )
+                            labelText = str((2*iDay+5))+"-day"
+                            plt.plot( dayAverageDates, dayAverage, averageColor[iDay], label=labelText )
+
                     plt.legend(loc="upper left")
                     plt.tight_layout()
                     #plt.show()
-#                sys.stdout.write( "{:>10s} {:>7s} {:>7s} {:>7s} {:>7s}\n".format( "date", "cases", "deaths", "ncases", "ndeaths" ) )
-#                for date,case,death,ncase,ndeath in zip( trimmed_dates, trimmed_cases, trimmed_deaths, new_cases, new_deaths ):
-#                    sys.stdout.write( "{:10s} {:7d} {:7d} {:7d} {:7d}\n".format( date, case, death, ncase, ndeath ) )
 
                 # Break iState loop
                 break
     plt.show()
-    
+
     return
 
-# Gets data every time it is called. The GUI depends depends on the states listed 
+# Gets data every time it is called. The GUI depends depends on the states listed
 # in the data the first time the data is retrieved. Subsequent retrievals will not
 # change the GUI. If states are added to the data between data retrievals the results
 # of the plots may be mislabeled.
@@ -349,6 +313,9 @@ def getData(dataURL):
 ############################################################
 #  Main program section
 ############################################################
+
+# Silence warning about leaving too many plots open
+plt.rcParams.update({'figure.max_open_warning': 0})
 
 # Create the main window
 mybg="light blue"
