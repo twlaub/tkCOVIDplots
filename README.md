@@ -1,4 +1,9 @@
 # tkCOVIDplots
+There are now two scripts. The original is just for the United States and
+is now named tkCOVIDplots-USA.py. The new script is for the entire world
+and is named tkCOVIDplots-world.py. The interface is as described below for
+both scripts.
+
 Python script to go get United States COVID-19 data and create plots.
 
 This script goes and gets the United States COVID-19 data from the
