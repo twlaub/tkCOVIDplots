@@ -29,23 +29,30 @@ def dayAveraging( mynDays, myList ):
 ############################################################
 #  Code for what the doPlots button does
 ############################################################
-def doPlots( myCountries, myCountriesCheck, mycddCheck, myLinearCheck, myLogCheck, myCasesCheck, myDeathsCheck, myAverageCheck ):
+def doPlots( myData, myCountries, myCountriesCheck, mycddCheck, myLinearCheck, myLogCheck, myCasesCheck, myDeathsCheck, myAverageCheck, myDataCheck ):
     # Get desired countries
     finalDesiredCountries = []
     for iCountry in range( len(myCountriesCheck) ):
         if ( myCountriesCheck[iCountry].get() ): finalDesiredCountries.append( myCountries[iCountry] )
 
-    # Get data everytime doPlots is clicked
+    # Get data if Refresh Data is checked
     # Desired data column headings: location, date, total_cases, total_deaths
-    who_world_df = getData( dataURL )
-    # Check to see if Countries has changed, if so do what?
-    #Get the list of countries in the location column
-    newCountries = list( who_world_df['location'].unique() )
-    newCountries.sort()
-    newCountries = tuple( Countries )
-    if ( newCountries != myCountries ):
-        # Issue warning
-        tk.tkMessageBox.showinfo( "Warning", "Available countries has changed.\nRecommend restarting application." )
+    if ( myDataCheck.get() ):
+        sys.stdout.write( 'Refreshing data\n' )
+        sys.stdout.flush()
+        who_world_df = getData( dataURL )
+        # Check to see if Countries has changed, if so do what?
+        #Get the list of countries in the location column
+        newCountries = list( who_world_df['location'].unique() )
+        newCountries.sort()
+        newCountries = tuple( Countries )
+        if ( newCountries != myCountries ):
+            # Issue warning
+            tk.tkMessageBox.showinfo( "Warning", "Available countries has changed.\nRecommend restarting application." )
+    else:
+#        sys.stdout.write( 'Not refreshing data\n' )
+#        sys.stdout.flush()
+        who_world_df = myData
 
     all_countries_cases=[]
     all_countries_deaths=[]
@@ -353,10 +360,18 @@ for iCol in range( len(dayAverageCheck) ):
     temp = tk.Label( mainWindow, text=labelText, font=myFont, fg="black", bg=mybg, width=countryLabelWidth, anchor="w" )
     temp.grid( row=nRows, column=( (iCol*2)+1 ) )
 nRows += 1
+# Add check box for refresh data
+dataCheckValue = tk.BooleanVar()
+dataCheckValue.set(False)
+dataCheck = tk.Checkbutton( mainWindow, var=dataCheckValue, bg=mybg )
+dataCheck.grid( row=nRows, column=0 )
+dataCheckLabel = tk.Label( mainWindow, text="Refresh Data", font=myFont, fg="black", bg=mybg, width=countryLabelWidth, anchor="w" )
+dataCheckLabel.grid( row=nRows, column=1 )
+nRows += 1
 
 # Add go button
 goButton = tk.Button( mainWindow, text="Show Plots", font=myFont, fg="black", bg=mybg, \
-    command=lambda:doPlots(Countries, countriesCheckValue, cddCheckValue, linearCheckValue, logCheckValue, casesCheckValue, deathsCheckValue, dayAverageCheckValue ) )
+    command=lambda:doPlots( who_world_df, Countries, countriesCheckValue, cddCheckValue, linearCheckValue, logCheckValue, casesCheckValue, deathsCheckValue, dayAverageCheckValue, dataCheckValue ) )
 goButton.grid( row=nRows, column=5 )
 nRows += 1
 

@@ -30,22 +30,29 @@ def dayAveraging( mynDays, myList ):
     return averagedDayList
 
 
-def doPlots( myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLogCheck, myCasesCheck, myDeathsCheck, myAverageCheck ):
+def doPlots( myData, myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLogCheck, myCasesCheck, myDeathsCheck, myAverageCheck, myDataCheck ):
     # Get desired states
     finalDesiredStates = []
     for iState in range( len(myStatesCheck) ):
         if ( myStatesCheck[iState].get() ): finalDesiredStates.append( myStates[iState] )
 
-    # Get data everytime doPlots is clicked
-    nyt_us_state_df = getData( dataURL )
-    # Check to see if States has changed, if so do what?
-    #Get the list of states in the states column
-    newStates = list( nyt_us_state_df['state'].unique() )
-    newStates.sort()
-    newStates = tuple( States )
-    if ( newStates != myStates ):
-        # Issue warning
-        tk.tkMessageBox.showinfo( "Warning", "Available states has changed.\nRecommend restarting application." )
+    # Get data if Refresh Data is checked
+    if ( myDataCheck.get() ):
+        sys.stdout.write( 'Refreshing data\n' )
+        sys.stdout.flush()
+        nyt_us_state_df = getData( dataURL )
+        # Check to see if States has changed, if so do what?
+        #Get the list of states in the states column
+        newStates = list( nyt_us_state_df['state'].unique() )
+        newStates.sort()
+        newStates = tuple( newStates )
+        if ( newStates != myStates ):
+            # Issue warning
+            tk.tkMessageBox.showinfo( "Warning", "Available states has changed.\nRecommend restarting application." )
+    else:
+#        sys.stdout.write( 'Not refreshing data\n' )
+#        sys.stdout.flush()
+        nyt_us_state_df = myData
 
     all_states_cases=[]
     all_states_deaths=[]
@@ -452,10 +459,18 @@ for iCol in range( len(dayAverageCheck) ):
     temp = tk.Label( mainWindow, text=labelText, font=myFont, fg="black", bg=mybg, width=stateLabelWidth, anchor="w" )
     temp.grid( row=nRows, column=( (iCol*2)+1 ) )
 nRows += 1
+# Add check box for refresh data
+dataCheckValue = tk.BooleanVar()
+dataCheckValue.set(False)
+dataCheck = tk.Checkbutton( mainWindow, var=dataCheckValue, bg=mybg )
+dataCheck.grid( row=nRows, column=0 )
+dataCheckLabel = tk.Label( mainWindow, text="Refresh Data", font=myFont, fg="black", bg=mybg, width=stateLabelWidth, anchor="w" )
+dataCheckLabel.grid( row=nRows, column=1 )
+nRows += 1
 
 # Add go button
 goButton = tk.Button( mainWindow, text="Show Plots", font=myFont, fg="black", bg=mybg, \
-    command=lambda:doPlots(States, statesCheckValue, usCheckValue, cddCheckValue, linearCheckValue, logCheckValue, casesCheckValue, deathsCheckValue, dayAverageCheckValue ) )
+    command=lambda:doPlots(nyt_us_state_df, States, statesCheckValue, usCheckValue, cddCheckValue, linearCheckValue, logCheckValue, casesCheckValue, deathsCheckValue, dayAverageCheckValue, dataCheckValue ) )
 goButton.grid( row=nRows, column=5 )
 nRows += 1
 
