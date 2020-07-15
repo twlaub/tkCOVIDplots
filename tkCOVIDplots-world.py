@@ -13,23 +13,17 @@ def dayAveraging( mynDays, myList ):
     sevenDayCases=[]
     for i in range( halfDays ):
         averagedDayList.append( sum( myList[0:(halfDays+1+i)] )/float(halfDays+1+i) )
-#        print( i )
-#        print( myList[0:(halfDays+1+i)] )
-#        print( sum( myList[0:(halfDays+1+i)] ), sum( myList[0:(halfDays+1+i)] )/float(halfDays+1+i) )
     for i in range( halfDays,len(myList)-halfDays ):
         averagedDayList.append( sum( myList[i-halfDays:i+halfDays] )/mynDays )
     for i in range( halfDays,0,-1 ):
         averagedDayList.append( sum( myList[(-1*(i+halfDays+1)):-1] )/float(i+halfDays) )
-#        print( i )
-#        print( myList[(-1*(i+halfDays+1)):-1] )
-#        print( sum( myList[(-1*(i+halfDays+1)):-1] ), sum( myList[(-1*(i+halfDays+1)):-1] )/float(i+halfDays) )
     return averagedDayList
 
 
 ############################################################
 #  Code for what the doPlots button does
 ############################################################
-def doPlots( myData, myCountries, myCountriesCheck, mycddCheck, myLinearCheck, myLogCheck, myCasesCheck, myDeathsCheck, myAverageCheck, myDataCheck ):
+def doPlots( myData, myCountries, myCountriesCheck, mycddCheck, myLinearCheck, myLogCheck, myCasesCheck, myDeathsCheck, myAverageCheck, myDataCheck, myWorldWithoutUSA ):
     # Get desired countries
     finalDesiredCountries = []
     for iCountry in range( len(myCountriesCheck) ):
@@ -45,7 +39,7 @@ def doPlots( myData, myCountries, myCountriesCheck, mycddCheck, myLinearCheck, m
         #Get the list of countries in the location column
         newCountries = list( who_world_df['location'].unique() )
         newCountries.sort()
-        newCountries = tuple( Countries )
+#        newCountries = tuple( newCountries )
         if ( newCountries != myCountries ):
             # Issue warning
             tk.tkMessageBox.showinfo( "Warning", "Available countries has changed.\nRecommend restarting application." )
@@ -85,8 +79,40 @@ def doPlots( myData, myCountries, myCountriesCheck, mycddCheck, myLinearCheck, m
             all_dates = country_dates
         index += 1
 
-    # Fill in short countries with dates and zeros
-    for iCountry in range(len(Countries)):
+    # Create World less USA data and append to downloaded data
+    # Relying on 'World' and 'United States' labels not to change
+    # Find 'World' and 'United States'
+    if ( myWorldWithoutUSA.get() ):
+        iWorld = -1
+        iUSA = -1
+        for iCountry in range(len(myCountries)):
+            if ( myCountries[iCountry] == 'World' ): iWorld = iCountry
+            if ( myCountries[iCountry] == 'United States' ): iUSA = iCountry
+        worldLessUSA = False
+        if ( (iWorld != -1) and (iUSA != -1) ): worldLessUSA = True
+        # Create world less USA data
+        if ( worldLessUSA ):
+            worldLessUSACases = []
+            for world,usa in zip( all_countries_cases[iWorld],all_countries_cases[iUSA] ):
+                worldLessUSACases.append( world - usa )
+            worldLessUSADeaths = []
+            for world,usa in zip( all_countries_deaths[iWorld],all_countries_deaths[iUSA] ):
+                worldLessUSADeaths.append( world - usa )
+            worldLessUSADeathrates = []
+            for cases,deaths in zip( worldLessUSACases, worldLessUSADeaths ):
+                if ( cases != 0 ): 
+                    worldLessUSADeathrates.append( float(deaths)/float(cases)*100. )
+                else:
+                    worldLessUSADeathrates.append( 0.0 )
+            # Append World Less USA data to downloaded data
+            myCountries.append( 'World Without USA' )
+            finalDesiredCountries.append( 'World Without USA' )
+            all_countries_cases.append( worldLessUSACases )
+            all_countries_deaths.append( worldLessUSADeaths )
+            all_countries_deathrates.append( worldLessUSADeathrates )
+
+    # Fill in short countries with dates and zeros, don't think this is necessary but doing anyway
+    for iCountry in range(len(myCountries)):
         if ( len(all_countries_cases[iCountry]) < maxLength ):
            for i in range(maxLength-len(all_countries_cases[iCountry])):
                all_countries_cases[iCountry].insert( 0, 0 )
@@ -207,6 +233,7 @@ def doPlots( myData, myCountries, myCountriesCheck, mycddCheck, myLinearCheck, m
 
                 # Break iCountry loop
                 break
+
     plt.show()
 
     return
@@ -266,7 +293,7 @@ nRows += 1
 #Get the list of countries in the 'location' column
 Countries = list( who_world_df['location'].unique() )
 Countries.sort()
-Countries = tuple( Countries )
+#Countries = tuple( Countries )
 maxCountryLength = 0
 
 # Find max length label (if a country is longer than max given above)
@@ -307,6 +334,13 @@ for iStart in range(0,nCountries,nColsCountries):
         temp.grid( row=nRows, column=(2*(iCol+1)-1) )
     tk.Label( mainWindow, text="   ", fg=mybg, bg=mybg ).grid( row=nRows, column=2*nColsCountries ) # padding right side
     nRows += 1
+nRows += 1
+# World less USA plot option
+worldWithoutUSACheckValue = tk.BooleanVar()
+worldWithoutUSACheckValue.set(False)
+worldWithoutUSACheck = tk.Checkbutton( mainWindow, var=worldWithoutUSACheckValue, bg=mybg ).grid( row=nRows, column=0 )
+plotLabel = tk.Label( mainWindow, text="World Without USA", font=myFont, fg="black", bg=mybg, width=countryLabelWidth, anchor="w" )
+plotLabel.grid( row=nRows, column=1 )
 nRows += 1
 
 # Add Plotting options
@@ -371,7 +405,7 @@ nRows += 1
 
 # Add go button
 goButton = tk.Button( mainWindow, text="Show Plots", font=myFont, fg="black", bg=mybg, \
-    command=lambda:doPlots( who_world_df, Countries, countriesCheckValue, cddCheckValue, linearCheckValue, logCheckValue, casesCheckValue, deathsCheckValue, dayAverageCheckValue, dataCheckValue ) )
+    command=lambda:doPlots( who_world_df, Countries, countriesCheckValue, cddCheckValue, linearCheckValue, logCheckValue, casesCheckValue, deathsCheckValue, dayAverageCheckValue, dataCheckValue, worldWithoutUSACheckValue ) )
 goButton.grid( row=nRows, column=5 )
 nRows += 1
 
