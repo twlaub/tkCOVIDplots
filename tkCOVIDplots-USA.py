@@ -328,14 +328,25 @@ def doPlots( myData, myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearChe
     
     if ( myAllStatesDeaths.get() ):
         allStatesDeaths = []
+        allStatesDeathrates = []
         for iState in range( len(myStates) ):
             allStatesDeaths.append( all_states_deaths[iState][-1] )
+            allStatesDeathrates.append( all_states_deathrates[iState][-1] )
+        # Deaths
         plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
         iFig += 1
         plt.grid(axis='y')
         plt.ylabel('Total Deaths')
         plt.xticks(rotation=90)
         plt.bar( myStates, allStatesDeaths )
+        plt.tight_layout()
+        # DeathRates
+        plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
+        iFig += 1
+        plt.grid(axis='y')
+        plt.ylabel('Deathrate %')
+        plt.xticks(rotation=90)
+        plt.bar( myStates, allStatesDeathrates )
         plt.tight_layout()
    
     plt.show()
