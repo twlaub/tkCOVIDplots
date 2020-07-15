@@ -30,7 +30,7 @@ def dayAveraging( mynDays, myList ):
     return averagedDayList
 
 
-def doPlots( myData, myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLogCheck, myCasesCheck, myDeathsCheck, myAverageCheck, myDataCheck ):
+def doPlots( myData, myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLogCheck, myCasesCheck, myDeathsCheck, myAverageCheck, myDataCheck, myAllStatesCases, myAllStatesDeaths ):
     # Get desired states
     finalDesiredStates = []
     for iState in range( len(myStatesCheck) ):
@@ -305,6 +305,39 @@ def doPlots( myData, myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearChe
 
                 # Break iState loop
                 break
+
+    # Collect data for all states cases or deaths
+    plotWidth=10
+    if ( myAllStatesCases.get() ):
+        allStatesCases = []
+        for iState in range( len(myStates) ):
+            allStatesCases.append( all_states_cases[iState][-1] )
+#        print( 'len of myStates:',len(myStates) )
+#        print( 'len of allStatesCases',len(allStatesCases) )
+#        print( 'len of myStates[0]',len(myStates[0]) )
+#        print( 'len of allStatesCases[0]',len(allStatesCases[0]) )
+#        print( 'myStates[0]',myStates[0] )
+#        print( 'allStatesCases[0]',allStatesCases[0] )
+        plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
+        iFig += 1
+        plt.grid(axis='y')
+        plt.ylabel('Total Cases')
+        plt.xticks(rotation=90)
+        plt.bar( myStates, allStatesCases )
+        plt.tight_layout()
+    
+    if ( myAllStatesDeaths.get() ):
+        allStatesDeaths = []
+        for iState in range( len(myStates) ):
+            allStatesDeaths.append( all_states_deaths[iState][-1] )
+        plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
+        iFig += 1
+        plt.grid(axis='y')
+        plt.ylabel('Total Deaths')
+        plt.xticks(rotation=90)
+        plt.bar( myStates, allStatesDeaths )
+        plt.tight_layout()
+   
     plt.show()
 
     return
@@ -459,6 +492,20 @@ for iCol in range( len(dayAverageCheck) ):
     temp = tk.Label( mainWindow, text=labelText, font=myFont, fg="black", bg=mybg, width=stateLabelWidth, anchor="w" )
     temp.grid( row=nRows, column=( (iCol*2)+1 ) )
 nRows += 1
+# Add check box for all states comparison
+allStatesCasesValue = tk.BooleanVar()
+allStatesCasesValue.set(False)
+allStatesCasesCheck = tk.Checkbutton( mainWindow, var=allStatesCasesValue, bg=mybg )
+allStatesCasesCheck.grid( row=nRows, column=0 )
+allStatesCasesLabel = tk.Label( mainWindow, text="All States Cases", font=myFont, fg="black", bg=mybg, width=stateLabelWidth, anchor="w" )
+allStatesCasesLabel.grid( row=nRows, column=1 )
+allStatesDeathsValue = tk.BooleanVar()
+allStatesDeathsValue.set(False)
+allStatesDeathsCheck = tk.Checkbutton( mainWindow, var=allStatesDeathsValue, bg=mybg )
+allStatesDeathsCheck.grid( row=nRows, column=2 )
+allStatesDeathsLabel = tk.Label( mainWindow, text="All States Deaths", font=myFont, fg="black", bg=mybg, width=stateLabelWidth, anchor="w" )
+allStatesDeathsLabel.grid( row=nRows, column=3 )
+nRows += 1
 # Add check box for refresh data
 dataCheckValue = tk.BooleanVar()
 dataCheckValue.set(False)
@@ -470,7 +517,7 @@ nRows += 1
 
 # Add go button
 goButton = tk.Button( mainWindow, text="Show Plots", font=myFont, fg="black", bg=mybg, \
-    command=lambda:doPlots(nyt_us_state_df, States, statesCheckValue, usCheckValue, cddCheckValue, linearCheckValue, logCheckValue, casesCheckValue, deathsCheckValue, dayAverageCheckValue, dataCheckValue ) )
+    command=lambda:doPlots(nyt_us_state_df, States, statesCheckValue, usCheckValue, cddCheckValue, linearCheckValue, logCheckValue, casesCheckValue, deathsCheckValue, dayAverageCheckValue, dataCheckValue, allStatesCasesValue, allStatesDeathsValue ) )
 goButton.grid( row=nRows, column=5 )
 nRows += 1
 
