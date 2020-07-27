@@ -10,13 +10,27 @@ import matplotlib.dates as mdates
 def dayAveraging( mynDays, myList ):
     halfDays = mynDays//2  # integer division
     averagedDayList=[]
-    sevenDayCases=[]
+    # Handle the beginning of the list where there is not a full nDays data to average
+#    print("Beginning of list")
     for i in range( halfDays ):
-        averagedDayList.append( sum( myList[0:(halfDays+1+i)] )/float(halfDays+1+i) )
+        averagedDayList.append( float(sum( myList[0:(halfDays+1+i)] ))/float(halfDays+1+i) )
+#        print( i )
+#        print( myList[0:(halfDays+1+i)] )
+#        print( sum( myList[0:(halfDays+1+i)] ), float(sum( myList[0:(halfDays+1+i)] ))/float(halfDays+1+i) )
+    # Handle the middle of the list were a full nDays worth of datat is available to average
+#    print("Middle of list")
     for i in range( halfDays,len(myList)-halfDays ):
-        averagedDayList.append( sum( myList[i-halfDays:i+halfDays] )/mynDays )
+        averagedDayList.append( float(sum( myList[i-halfDays:i+halfDays+1] ))/float(mynDays) )
+#        print( i )
+#        print( myList[i-halfDays:i+halfDays+1] )
+#        print( sum( myList[i-halfDays:i+halfDays+1] ), float(sum( myList[i-halfDays:i+halfDays+1] ))/float(mynDays) )
+    # Handle the end of the list where there is not a full nDays data to average
+#    print("End of list")
     for i in range( halfDays,0,-1 ):
-        averagedDayList.append( sum( myList[(-1*(i+halfDays+1)):-1] )/float(i+halfDays) )
+        averagedDayList.append( float(sum( myList[(-1*(i+halfDays+1)):-1] ))/float(i+halfDays) )
+#        print( i )
+#        print( myList[(-1*(i+halfDays+1)):-1] )
+#        print( sum( myList[(-1*(i+halfDays+1)):-1] ), float(sum( myList[(-1*(i+halfDays+1)):-1] ))/float(i+halfDays) )
     return averagedDayList
 
 
