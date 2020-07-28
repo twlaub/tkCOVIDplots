@@ -11,26 +11,31 @@ def dayAveraging( mynDays, myList ):
     halfDays = mynDays//2  # integer division
     averagedDayList=[]
     # Handle the beginning of the list where there is not a full nDays data to average
-#    print("Beginning of list")
+#    print( "\n\n",mynDays,"day average" )
+#    print("\nBeginning of list")
     for i in range( halfDays ):
         averagedDayList.append( float(sum( myList[0:(halfDays+1+i)] ))/float(halfDays+1+i) )
-#        print( i )
-#        print( myList[0:(halfDays+1+i)] )
-#        print( sum( myList[0:(halfDays+1+i)] ), float(sum( myList[0:(halfDays+1+i)] ))/float(halfDays+1+i) )
+#        print( "Index:", i )
+#        print( "Partial list:",myList[0:(halfDays+1+i)] )
+#        print( "Divisor",(halfDays+1+i) )
+#        print( "Sum,Avg:",sum( myList[0:(halfDays+1+i)] ), float(sum( myList[0:(halfDays+1+i)] ))/float(halfDays+1+i) )
     # Handle the middle of the list were a full nDays worth of datat is available to average
-#    print("Middle of list")
+#    print("\nMiddle of list")
     for i in range( halfDays,len(myList)-halfDays ):
         averagedDayList.append( float(sum( myList[i-halfDays:i+halfDays+1] ))/float(mynDays) )
-#        print( i )
-#        print( myList[i-halfDays:i+halfDays+1] )
-#        print( sum( myList[i-halfDays:i+halfDays+1] ), float(sum( myList[i-halfDays:i+halfDays+1] ))/float(mynDays) )
+#        print( "Index:", i )
+#        print( "Partial list:",myList[i-halfDays:i+halfDays+1] )
+#        print( "Divisor",mynDays )
+#        print( "Sum,Avg:",sum( myList[i-halfDays:i+halfDays+1] ), float(sum( myList[i-halfDays:i+halfDays+1] ))/float(mynDays) )
     # Handle the end of the list where there is not a full nDays data to average
-#    print("End of list")
+#    print("\nEnd of list")
+#    print( "Length of list:",len(myList) )
     for i in range( halfDays,0,-1 ):
-        averagedDayList.append( float(sum( myList[(-1*(i+halfDays+1)):-1] ))/float(i+halfDays) )
-#        print( i )
-#        print( myList[(-1*(i+halfDays+1)):-1] )
-#        print( sum( myList[(-1*(i+halfDays+1)):-1] ), float(sum( myList[(-1*(i+halfDays+1)):-1] ))/float(i+halfDays) )
+        averagedDayList.append( float(sum( myList[(len(myList)-halfDays-i):len(myList)] ))/float(i+halfDays) )
+#        print( "Index:",len(myList) - i )
+#        print( "Partial list:",myList[(len(myList)-halfDays-i):len(myList)] )
+#        print( "Divisor",(i+halfDays) )
+#        print( "Sum,Avg:",sum( myList[(len(myList)-halfDays-i):len(myList)] ), float(sum( myList[(len(myList)-halfDays-i):len(myList)] ))/float(i+halfDays) )
     return averagedDayList
 
 
