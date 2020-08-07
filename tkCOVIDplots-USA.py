@@ -41,7 +41,7 @@ def dayAveraging( mynDays, myList ):
 ############################################################
 #  Code for what the "Show Plots" button does
 ############################################################
-def doPlots( myData, myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLogCheck, myCasesCheck, myDeathsCheck, myAverageCheck, myDataCheck, myAllStatesCases, myAllStatesDeaths ):
+def doPlots( myData, myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLogCheck, myCasesCheck, myDeathsCheck, myAverageCheck, myDataCheck, myAllStatesCases, myAllStatesDeaths, myNegCheck ):
     # Get desired states
     finalDesiredStates = []
     for iState in range( len(myStatesCheck) ):
@@ -183,6 +183,7 @@ def doPlots( myData, myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearChe
             plt.legend(loc="upper left")
             plt.grid(axis='y')
             plt.tight_layout()
+            if ( myNegCheck.get() ): plt.ylim(bottom=0)
             #plt.show()
 
         # US new deaths chart
@@ -209,6 +210,7 @@ def doPlots( myData, myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearChe
             plt.legend(loc="upper left")
             plt.grid(axis='y')
             plt.tight_layout()
+            if ( myNegCheck.get() ): plt.ylim(bottom=0)
             #plt.show()
 
     for state in finalDesiredStates:
@@ -286,6 +288,7 @@ def doPlots( myData, myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearChe
 
                     plt.legend(loc="upper left")
                     plt.tight_layout()
+                    if ( myNegCheck.get() ): plt.ylim(bottom=0)
                     #plt.show()
 
                 # State new deaths chart
@@ -312,6 +315,7 @@ def doPlots( myData, myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearChe
 
                     plt.legend(loc="upper left")
                     plt.tight_layout()
+                    if ( myNegCheck.get() ): plt.ylim(bottom=0)
                     #plt.show()
 
                 # Break iState loop
@@ -528,6 +532,14 @@ allStatesDeathsCheck.grid( row=nRows, column=2 )
 allStatesDeathsLabel = tk.Label( mainWindow, text="All States Deaths", font=myFont, fg="black", bg=mybg, width=stateLabelWidth, anchor="w" )
 allStatesDeathsLabel.grid( row=nRows, column=3 )
 nRows += 1
+# Add check box to suppress negatives
+negCheckValue = tk.BooleanVar()
+negCheckValue.set(True)
+negCheck = tk.Checkbutton( mainWindow, var=negCheckValue, bg=mybg )
+negCheck.grid( row=nRows, column=0 )
+negCheckLabel = tk.Label( mainWindow, text="Suppress negatives", font=myFont, fg="black", bg=mybg, width=stateLabelWidth, anchor="w" )
+negCheckLabel.grid( row=nRows, column=1 )
+nRows += 1
 # Add check box for refresh data
 dataCheckValue = tk.BooleanVar()
 dataCheckValue.set(False)
@@ -539,7 +551,7 @@ nRows += 1
 
 # Add go button
 goButton = tk.Button( mainWindow, text="Show Plots", font=myFont, fg="black", bg=mybg, \
-    command=lambda:doPlots(nyt_us_state_df, States, statesCheckValue, usCheckValue, cddCheckValue, linearCheckValue, logCheckValue, casesCheckValue, deathsCheckValue, dayAverageCheckValue, dataCheckValue, allStatesCasesValue, allStatesDeathsValue ) )
+    command=lambda:doPlots(nyt_us_state_df, States, statesCheckValue, usCheckValue, cddCheckValue, linearCheckValue, logCheckValue, casesCheckValue, deathsCheckValue, dayAverageCheckValue, dataCheckValue, allStatesCasesValue, allStatesDeathsValue, negCheckValue ) )
 goButton.grid( row=nRows, column=5 )
 nRows += 1
 
