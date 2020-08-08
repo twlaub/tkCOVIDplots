@@ -1,7 +1,8 @@
 # tkCOVIDplots
-There are now three scripts. The original is just for the United States and
+There are now four scripts. The original is just for the United States and
 is now named tkCOVIDplots-USA.py. A second script is also for the United States
-but uses a different data source and is name tkCOVIDplots-USA2.py. The third 
+but uses a different data source and is name tkCOVIDplots-USA2.py. The third
+script is also for the US but uses Johns Hopkins data. The fourth 
 script is for the entire world and is named tkCOVIDplots-world.py. The interface 
 is as described below for all three scripts.
 
