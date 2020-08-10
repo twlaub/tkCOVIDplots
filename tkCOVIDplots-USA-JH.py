@@ -53,6 +53,7 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
     all_states_deaths=[]
     all_states_deathrates=[]
     all_states_length=[]
+    all_states_population=[]
     all_dates=[]
     for iState in range(len(myStates)):
         state_JHDeaths_df = myDeathsData.loc[myDeathsData['Province_State'] == myStates[iState] ]
@@ -60,6 +61,7 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
         state_dates = list(state_JHDeaths_df)[12:] # if using cases start at 11
         state_cases = list( state_JHCases_df[state_dates].sum(axis=0) )
         state_deaths = list( state_JHDeaths_df[state_dates].sum(axis=0) )
+        state_Population = state_JHDeaths_df['Population'].sum(axis=0)
         state_deathrates=[0.]*len(state_cases)
         for i in range(len(state_cases)):
             state_deathrates[i] = 0.
@@ -67,6 +69,7 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
         all_states_length.append( len(state_dates) )
         all_states_cases.append( state_cases )
         all_states_deaths.append( state_deaths )
+        all_states_population.append( state_Population )
         all_states_deathrates.append( state_deathrates )
     all_dates = state_dates
 
@@ -290,8 +293,13 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
     plotWidth=10
     if ( myAllStatesCases.get() ):
         allStatesCases = []
+        allStatesCasesPerCap = []
         for iState in range( len(myStates) ):
             allStatesCases.append( all_states_cases[iState][-1] )
+            if ( all_states_population[iState] != 0 ): 
+                allStatesCasesPerCap.append( all_states_cases[iState][-1]/all_states_population[iState]*100000. )
+            else:
+                allStatesCasesPerCap.append( 0. )
 #        print( 'len of myStates:',len(myStates) )
 #        print( 'len of allStatesCases',len(allStatesCases) )
 #        print( 'len of myStates[0]',len(myStates[0]) )
@@ -305,13 +313,25 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
         plt.xticks(rotation=90)
         plt.bar( myStates, allStatesCases )
         plt.tight_layout()
+        plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
+        iFig += 1
+        plt.grid(axis='y')
+        plt.ylabel('Cases per 100,000')
+        plt.xticks(rotation=90)
+        plt.bar( myStates, allStatesCasesPerCap )
+        plt.tight_layout()
     
     if ( myAllStatesDeaths.get() ):
         allStatesDeaths = []
         allStatesDeathrates = []
+        allStatesDeathsPerCap = []
         for iState in range( len(myStates) ):
             allStatesDeaths.append( all_states_deaths[iState][-1] )
             allStatesDeathrates.append( all_states_deathrates[iState][-1] )
+            if ( all_states_population[iState] != 0 ): 
+                allStatesDeathsPerCap.append( all_states_deaths[iState][-1]/all_states_population[iState]*100000. )
+            else:
+                allStatesDeathsPerCap.append( 0. )
         # Deaths
         plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
         iFig += 1
@@ -319,6 +339,13 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
         plt.ylabel('Total Deaths')
         plt.xticks(rotation=90)
         plt.bar( myStates, allStatesDeaths )
+        plt.tight_layout()
+        plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
+        iFig += 1
+        plt.grid(axis='y')
+        plt.ylabel('Deaths per 100,000')
+        plt.xticks(rotation=90)
+        plt.bar( myStates, allStatesDeathsPerCap )
         plt.tight_layout()
         # DeathRates
         plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
