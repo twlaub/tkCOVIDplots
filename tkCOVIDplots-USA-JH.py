@@ -58,7 +58,7 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
     for iState in range(len(myStates)):
         state_JHDeaths_df = myDeathsData.loc[myDeathsData['Province_State'] == myStates[iState] ]
         state_JHCases_df  = myCasesData.loc[myCasesData['Province_State'] == myStates[iState] ]
-        state_dates = list(state_JHDeaths_df)[12:] # if using cases start at 11
+        state_dates = list( state_JHDeaths_df)[12:] # if using cases start at 11
         state_cases = list( state_JHCases_df[state_dates].sum(axis=0) )
         state_deaths = list( state_JHDeaths_df[state_dates].sum(axis=0) )
         state_Population = state_JHDeaths_df['Population'].sum(axis=0)

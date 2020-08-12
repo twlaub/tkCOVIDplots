@@ -3,8 +3,9 @@ There are now four scripts. The original is just for the United States and
 is now named tkCOVIDplots-USA.py. A second script is also for the United States
 but uses a different data source and is name tkCOVIDplots-USA2.py. The third
 script is also for the US but uses Johns Hopkins data. The fourth 
-script is for the entire world and is named tkCOVIDplots-world.py. The interface 
-is as described below for all three scripts.
+script is for the entire world and is named tkCOVIDplots-world.py. A fifth
+script is also world states but using Johns Hopkins data.
+The interface is as described below for all three scripts.
 
 This script goes and gets the United States COVID-19 data from the
 New York times database. There is a GUI where you can select the 
