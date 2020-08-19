@@ -9,39 +9,63 @@ import matplotlib.dates as mdates
 
 
 # Setting default plotting options
-defaultStates = ( "New Mexico", "Texas" )  # default desired states
-defaultAvgOpts = ( False, True, False )    # default daily averages
-defaultCDD = False                         # default cases, deaths, deathrates
+defaultStates = ( "New Mexico", "Texas" )   # default desired states
+defaultAvgOpts = ( False, True, False )     # default daily averages
+defaultCDD = False                          # default cases, deaths, deathrates
+plotWidth8 = 8.0                            # default plot width
+plotWidth10 = 10.0                          # default plot width
+plotHeight = 6.0                            # default plot height
+averageColor=[ 'red', 'magenta', 'orange' ] # default daily average plot colors
+cddColors=[ 'green', 'red', 'orange' ]      # default daily average plot colors
 
+############################################################
+# Plots cumulative cases, deaths, and deathrates
+def cddPlots( iFig, x, ys, colors, labels, linlog ):
+    plt.figure( num=iFig, figsize=(plotWidth8, plotHeight) )
+    iFig += 1
+    plt.xticks(rotation=45)
+    if( linlog == 'linear' ): plt.ylim(0,max(ys[0])*1.05)
+    plt.grid()
+    for thisY,thisColor,thisLabel in zip( ys,colors,labels ):
+        plt.plot( x, thisY, color=thisColor, label=thisLabel )
+    plt.legend(loc="upper left")
+    plt.yscale( linlog )
+    plt.tight_layout()
+
+############################################################
+# Plots new cases and deaths along with daily moving averages
+def dailyPlots( iFig, x, y, averageCheck, plotLabel, negCheck ):
+    plt.figure(num=iFig,figsize=(plotWidth8, plotHeight))
+
+    # Daily bar chart
+    plt.ylabel( plotLabel )
+    plt.xticks(rotation=45)
+    plt.bar( x, y, label='daily' )
+
+    # Get 5,7,9-day moving averages
+    for iDay in range(3):
+        if ( averageCheck[iDay].get() ):
+            dayAverage = dayAveraging( (2*iDay+5), y )
+            labelText = str((2*iDay+5))+"-day"
+            plt.plot( x, dayAverage, averageColor[iDay], label=labelText )
+    plt.legend(loc="upper left")
+    plt.grid(axis='y')
+    plt.tight_layout()
+    if ( negCheck.get() ): plt.ylim(bottom=0)
+
+############################################################
 def dayAveraging( mynDays, myList ):
     halfDays = mynDays//2  # integer division
     averagedDayList=[]
     # Handle the beginning of the list where there is not a full nDays data to average
-#    print( "\n\n",mynDays,"day average" )
-#    print("\nBeginning of list")
     for i in range( halfDays ):
         averagedDayList.append( float(sum( myList[0:(halfDays+1+i)] ))/float(halfDays+1+i) )
-#        print( "Index:", i )
-#        print( "Partial list:",myList[0:(halfDays+1+i)] )
-#        print( "Divisor",(halfDays+1+i) )
-#        print( "Sum,Avg:",sum( myList[0:(halfDays+1+i)] ), float(sum( myList[0:(halfDays+1+i)] ))/float(halfDays+1+i) )
     # Handle the middle of the list were a full nDays worth of datat is available to average
-#    print("\nMiddle of list")
     for i in range( halfDays,len(myList)-halfDays ):
         averagedDayList.append( float(sum( myList[i-halfDays:i+halfDays+1] ))/float(mynDays) )
-#        print( "Index:", i )
-#        print( "Partial list:",myList[i-halfDays:i+halfDays+1] )
-#        print( "Divisor",mynDays )
-#        print( "Sum,Avg:",sum( myList[i-halfDays:i+halfDays+1] ), float(sum( myList[i-halfDays:i+halfDays+1] ))/float(mynDays) )
     # Handle the end of the list where there is not a full nDays data to average
-#    print("\nEnd of list")
-#    print( "Length of list:",len(myList) )
     for i in range( halfDays,0,-1 ):
         averagedDayList.append( float(sum( myList[(len(myList)-halfDays-i):len(myList)] ))/float(i+halfDays) )
-#        print( "Index:",len(myList) - i )
-#        print( "Partial list:",myList[(len(myList)-halfDays-i):len(myList)] )
-#        print( "Divisor",(i+halfDays) )
-#        print( "Sum,Avg:",sum( myList[(len(myList)-halfDays-i):len(myList)] ), float(sum( myList[(len(myList)-halfDays-i):len(myList)] ))/float(i+halfDays) )
     return averagedDayList
 
 ############################################################
@@ -78,13 +102,15 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
         all_states_deathrates.append( state_deathrates )
     all_dates = state_dates
 
+#    plotWidth = 8.0                             # default plot width
+#    plotHeight = 6.0                            # default plot height
+#    averageColor=[ 'red', 'magenta', 'orange' ] # default daily average plot colors
+#    cddColors=[ 'green', 'red', 'orange' ]       # default daily average plot colors
+
     # Now convert string dates to python date objects using numpy
     # This will allow nice formatting of the date axis
     all_dates = mdates.num2date( mdates.datestr2num(all_dates) )
 
-    plotWidth = 8.0
-    plotHeight = 6.0
-    averageColor=[ 'red', 'magenta', 'orange' ]
 
     iFig = 0
     # Calculate us total and plot
@@ -99,37 +125,17 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
             us_deathrates[iDate] = 0.
             if ( us_cases[iDate] != 0. ): us_deathrates[iDate] = float(us_deaths[iDate])/float(us_cases[iDate])*100.
 
-        # Plot the data
-        # Set up the graph
-#        print( "\nPlotting US data" )
+        # Cases, Deaths, and Deathrates
         if ( mycddCheck.get() ):
-        # Linear
+            labels = [ 'US confirmed, number', 'US deaths, number', 'US deathrate, %' ]
+            # Linear
             if ( myLinearCheck.get() ):
-                plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
+                cddPlots( iFig, all_dates, [ us_cases, us_deaths, us_deathrates ], cddColors, labels, 'linear' )
                 iFig += 1
-                plt.xticks(rotation=45)
-                plt.ylim(0,max(us_cases)*1.05)
-                plt.grid()
-                plt.plot(all_dates,us_cases, color='green', label='US confirmed, number')
-                plt.plot(all_dates,us_deaths, color='red', label='US deaths, number')
-                plt.plot(all_dates,us_deathrates, color='orange', label='US deathrate, %')
-                plt.legend(loc="upper left")
-                plt.tight_layout()
-                #plt.show()
-
             # Semilog
             if ( myLogCheck.get() ):
-                plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
+                cddPlots( iFig, all_dates, [ us_cases, us_deaths, us_deathrates ], cddColors, labels, 'log' )
                 iFig += 1
-                plt.xticks(rotation=45)
-                plt.grid()
-                plt.plot(all_dates,us_cases, color='green', label='US confirmed, number')
-                plt.plot(all_dates,us_deaths, color='red', label='US deaths, number')
-                plt.plot(all_dates,us_deathrates, color='orange', label='US deathrate, %')
-                plt.legend(loc="upper left")
-                plt.yscale('log')
-                plt.tight_layout()
-                #plt.show()
 
         # US new cases chart
         if ( myCasesCheck.get() ):
@@ -137,54 +143,16 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
 
             for cases1,cases2 in zip( us_cases[:-1], us_cases[1:] ):
                 us_new_cases.append( cases2 - cases1 )
-            
-            plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
+            dailyPlots( iFig, all_dates, us_new_cases, myAverageCheck, 'US New Cases', myNegCheck )
             iFig += 1
-            plt.ylabel('US New Cases')
-            plt.xticks(rotation=45)
-            plt.bar( all_dates, us_new_cases, label='daily' )
-
-            # Get 5,7,9-day moving average of new cases
-            dayAverageDates = all_dates
-            for iDay in range(3):
-                if ( myAverageCheck[iDay].get() ):
-#                    print( (2*iDay+5),"day average" )            
-                    dayAverage = dayAveraging( (2*iDay+5), us_new_cases )
-                    labelText = str((2*iDay+5))+"-day"
-                    plt.plot( dayAverageDates, dayAverage, averageColor[iDay], label=labelText )
-
-            plt.legend(loc="upper left")
-            plt.grid(axis='y')
-            plt.tight_layout()
-            if ( myNegCheck.get() ): plt.ylim(bottom=0)
-            #plt.show()
 
         # US new deaths chart
         if ( myDeathsCheck.get() ):
             us_new_deaths = [us_deaths[0]]
             for deaths1,deaths2 in zip( us_deaths[:-1], us_deaths[1:] ):
                 us_new_deaths.append( deaths2 - deaths1 )
-
-            plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
+            dailyPlots( iFig, all_dates, us_new_deaths, myAverageCheck, 'US New Deaths', myNegCheck )
             iFig += 1
-            plt.ylabel('US New Deaths')
-            plt.xticks(rotation=45)
-            plt.bar( all_dates,us_new_deaths, label='daily' )
-
-            # Get 5,7,9-day moving average of new deaths
-            dayAverageDates = all_dates
-            for iDay in range(3):
-                if ( myAverageCheck[iDay].get() ):
-#                    print( (2*iDay+5),"day average" )            
-                    dayAverage = dayAveraging( (2*iDay+5), us_new_deaths )
-                    labelText = str((2*iDay+5))+"-day"
-                    plt.plot( dayAverageDates, dayAverage, averageColor[iDay], label=labelText )
-
-            plt.legend(loc="upper left")
-            plt.grid(axis='y')
-            plt.tight_layout()
-            if ( myNegCheck.get() ): plt.ylim(bottom=0)
-            #plt.show()
 
     for state in finalDesiredStates:
         for iState in range(len(myStates)):
@@ -201,41 +169,23 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
                     trimmed_deaths.append(deaths)
                     trimmed_deathrate.append(deathrate)
 #                print( "\nPlotting",state,"data" )
-                # Set up the graph
+
                 caseLabel=state+' confirmed, number'
                 deathLabel=state+' deaths, number'
                 rateLabel=state+' deathrate, %'
-                # Linear
-                if ( mycddCheck.get() ):
-                    if ( myLinearCheck.get() ):
-                        plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
-                        iFig += 1
-                        plt.xticks(rotation=45)
-                        plt.ylim(0,max(trimmed_cases)*1.05)
-                        plt.grid()
-                        caseLabel=state+' confirmed, number'
-                        deathLabel=state+' deaths, number'
-                        rateLabel=state+' deathrate, %'
-                        plt.plot(trimmed_dates,trimmed_cases, color='green', label=caseLabel )
-                        plt.plot(trimmed_dates,trimmed_deaths, color='red', label=deathLabel )
-                        plt.plot(trimmed_dates,trimmed_deathrate, color='orange', label=rateLabel )
-                        plt.legend(loc="upper left")
-                        plt.tight_layout()
-                        #plt.show()
+                labels = [ caseLabel, deathLabel, rateLabel ]
 
+                # Cumulative cases, deaths, and deathrates
+                if ( mycddCheck.get() ):
+                    Ys = [ trimmed_cases, trimmed_deaths, trimmed_deathrate ]
+                    # Linear
+                    if ( myLinearCheck.get() ):
+                        cddPlots( iFig, trimmed_dates, Ys, cddColors, labels, 'linear' )
+                        iFig += 1
                     # Semilog
                     if ( myLogCheck.get() ):
-                        plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
+                        cddPlots( iFig, trimmed_dates, Ys, cddColors, labels, 'log' )
                         iFig += 1
-                        plt.xticks(rotation=45)
-                        plt.grid()
-                        plt.plot(trimmed_dates,trimmed_cases, color='green', label=caseLabel )
-                        plt.plot(trimmed_dates,trimmed_deaths, color='red', label=deathLabel )
-                        plt.plot(trimmed_dates,trimmed_deathrate, color='orange', label=rateLabel )
-                        plt.legend(loc="upper left")
-                        plt.yscale('log')
-                        plt.tight_layout()
-                        #plt.show()
 
                 # State new cases chart
                 if ( myCasesCheck.get() ):
@@ -243,26 +193,8 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
                     for cases1,cases2 in zip( trimmed_cases[0:-1], trimmed_cases[1:] ):
                         new_cases.append( cases2 - cases1 )
                     caseLabel=state+' New Cases'
-                    plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
+                    dailyPlots( iFig, trimmed_dates, new_cases, myAverageCheck, caseLabel, myNegCheck )
                     iFig += 1
-                    plt.grid(axis='y')
-                    plt.ylabel(caseLabel)
-                    plt.xticks(rotation=45)
-                    plt.bar( trimmed_dates, new_cases, label='daily' )
-                     
-                    # Get 5,7,9-day moving average of new cases
-                    dayAverageDates = trimmed_dates
-                    for iDay in range(3):
-                        if ( myAverageCheck[iDay].get() ):
-#                            print( (2*iDay+5),"day average" )            
-                            dayAverage = dayAveraging( (2*iDay+5), new_cases )
-                            labelText = str((2*iDay+5))+"-day"
-                            plt.plot( dayAverageDates, dayAverage, averageColor[iDay], label=labelText )
-
-                    plt.legend(loc="upper left")
-                    plt.tight_layout()
-                    if ( myNegCheck.get() ): plt.ylim(bottom=0)
-                    #plt.show()
 
                 # State new deaths chart
                 if ( myDeathsCheck.get() ):
@@ -270,38 +202,20 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
                     for deaths1,deaths2 in zip( trimmed_deaths[:-1], trimmed_deaths[1:] ):
                         new_deaths.append( deaths2 - deaths1 )
                     deathLabel=state+' New Deaths'
-                    plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
+                    dailyPlots( iFig, trimmed_dates, new_deaths, myAverageCheck, caseLabel, myNegCheck )
                     iFig += 1
-                    plt.grid(axis='y')
-                    plt.ylabel(deathLabel)
-                    plt.xticks(rotation=45)
-                    plt.bar( trimmed_dates, new_deaths, label='daily' )
-                     
-                    # Get 5,7,9-day moving average of new deaths
-                    dayAverageDates = trimmed_dates
-                    for iDay in range(3):
-                        if ( myAverageCheck[iDay].get() ):
-#                            print( (2*iDay+5),"day average" )            
-                            dayAverage = dayAveraging( (2*iDay+5), new_deaths )
-                            labelText = str((2*iDay+5))+"-day"
-                            plt.plot( dayAverageDates, dayAverage, averageColor[iDay], label=labelText )
-
-                    plt.legend(loc="upper left")
-                    plt.tight_layout()
-                    if ( myNegCheck.get() ): plt.ylim(bottom=0)
-                    #plt.show()
 
                 # Break iState loop
                 break
 
     # Collect data for all states cases or deaths
-    plotWidth=10
+#    plotWidth=10
     if ( myAllStatesCases.get() ):
         allStatesCases = []
         allStatesCasesPerCap = []
         for iState in range( len(myStates) ):
             allStatesCases.append( all_states_cases[iState][-1] )
-            if ( all_states_population[iState] != 0 ): 
+            if ( all_states_population[iState] != 0 ):
                 allStatesCasesPerCap.append( all_states_cases[iState][-1]/all_states_population[iState]*100000. )
             else:
                 allStatesCasesPerCap.append( 0. )
@@ -311,21 +225,21 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
 #        print( 'len of allStatesCases[0]',len(allStatesCases[0]) )
 #        print( 'myStates[0]',myStates[0] )
 #        print( 'allStatesCases[0]',allStatesCases[0] )
-        plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
+        plt.figure(num=iFig,figsize=(plotWidth10, plotHeight))
         iFig += 1
         plt.grid(axis='y')
         plt.ylabel('Total Cases')
         plt.xticks(rotation=90)
         plt.bar( myStates, allStatesCases )
         plt.tight_layout()
-        plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
+        plt.figure(num=iFig,figsize=(plotWidth10, plotHeight))
         iFig += 1
         plt.grid(axis='y')
         plt.ylabel('Cases per 100,000')
         plt.xticks(rotation=90)
         plt.bar( myStates, allStatesCasesPerCap )
         plt.tight_layout()
-    
+
     if ( myAllStatesDeaths.get() ):
         allStatesDeaths = []
         allStatesDeathrates = []
@@ -333,19 +247,19 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
         for iState in range( len(myStates) ):
             allStatesDeaths.append( all_states_deaths[iState][-1] )
             allStatesDeathrates.append( all_states_deathrates[iState][-1] )
-            if ( all_states_population[iState] != 0 ): 
+            if ( all_states_population[iState] != 0 ):
                 allStatesDeathsPerCap.append( all_states_deaths[iState][-1]/all_states_population[iState]*100000. )
             else:
                 allStatesDeathsPerCap.append( 0. )
         # Deaths
-        plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
+        plt.figure(num=iFig,figsize=(plotWidth10, plotHeight))
         iFig += 1
         plt.grid(axis='y')
         plt.ylabel('Total Deaths')
         plt.xticks(rotation=90)
         plt.bar( myStates, allStatesDeaths )
         plt.tight_layout()
-        plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
+        plt.figure(num=iFig,figsize=(plotWidth10, plotHeight))
         iFig += 1
         plt.grid(axis='y')
         plt.ylabel('Deaths per 100,000')
@@ -353,18 +267,19 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
         plt.bar( myStates, allStatesDeathsPerCap )
         plt.tight_layout()
         # DeathRates
-        plt.figure(num=iFig,figsize=(plotWidth, plotHeight))
+        plt.figure(num=iFig,figsize=(plotWidth10, plotHeight))
         iFig += 1
         plt.grid(axis='y')
         plt.ylabel('Deathrate %')
         plt.xticks(rotation=90)
         plt.bar( myStates, allStatesDeathrates )
         plt.tight_layout()
-   
+
     plt.show()
 
     return
 
+############################################################
 # Gets data every time it is called. The GUI depends depends on the states listed
 # in the data the first time the data is retrieved. Subsequent retrievals will not
 # change the GUI. If states are added to the data between data retrievals the results
