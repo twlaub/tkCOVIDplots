@@ -8,6 +8,11 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 
+# Setting default plotting options
+defaultStates = ( "New Mexico", "Texas" )  # default desired states
+defaultAvgOpts = ( False, True, False )    # default daily averages
+defaultCDD = False                         # default cases, deaths, deathrates
+
 def dayAveraging( mynDays, myList ):
     halfDays = mynDays//2  # integer division
     averagedDayList=[]
@@ -453,6 +458,7 @@ for iStart in range(0,nStates,nColsStates):
         if ( iState >= nStates ): break
         statesCheckValue[iState] = tk.BooleanVar()
         statesCheckValue[iState].set(False)
+        if ( States[iState] in defaultStates ): statesCheckValue[iState].set(True)
         statesCheck[iState] = tk.Checkbutton( mainWindow, var=statesCheckValue[iState], bg=mybg )
         statesCheck[iState].grid( row=nRows, column=(2*iCol) )
         temp = tk.Label( mainWindow, text=States[iState], font=myFont, fg="black", bg=mybg, width=stateLabelWidth, anchor="w" )
@@ -479,7 +485,8 @@ tk.Label( mainWindow, text="", bg=mybg ).grid( row=nRows, column=0 )
 nRows += 1
 # Cases, Deaths, and Deathrate scale options
 cddCheckValue = tk.BooleanVar()
-cddCheckValue.set(True)
+#cddCheckValue.set(True)
+cddCheckValue.set( defaultCDD )
 #print( "cddCheckValue:",cddCheckValue.get() )
 cddCheck = tk.Checkbutton( mainWindow, var=cddCheckValue, bg=mybg ).grid( row=nRows, column=0 )
 plotLabel = tk.Label( mainWindow, text="Cases, Deaths, DeathRates:", font=myFont, fg="black", bg=mybg, width=stateLabelWidth, anchor="w" )
@@ -513,7 +520,8 @@ dayAverageCheck = [None]*3
 dayAverageCheckValue = [None]*3
 for iCol in range( len(dayAverageCheck) ):
     dayAverageCheckValue[iCol] = tk.BooleanVar()
-    dayAverageCheckValue[iCol].set(False)
+#    dayAverageCheckValue[iCol].set(False)
+    dayAverageCheckValue[iCol].set( defaultAvgOpts[iCol] )
     dayAverageCheck[iCol] = tk.Checkbutton( mainWindow, var=dayAverageCheckValue[iCol], bg=mybg )
     dayAverageCheck[iCol].grid( row=nRows, column=( iCol*2 ) )
     labelText = str( ((iCol+1)*2+3) ) + "-day Average"
