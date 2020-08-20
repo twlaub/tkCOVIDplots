@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
-defaultStates = ( "New Mexico", "Texas" )   # default desired states
+#defaultCountries = ( "New Mexico", "Texas" )   # default desired countries
 defaultAvgOpts = ( False, True, False )     # default daily averages
 defaultCDD = False                          # default cases, deaths, deathrates
 plotWidth = 8.0                             # default plot width
@@ -317,7 +317,8 @@ nRows += 1
 
 # Add World sum checkbox
 worldWithoutUSACheckValue = tk.BooleanVar()
-worldWithoutUSACheckValue.set(False)
+#worldWithoutUSACheckValue.set(False)
+worldWithoutUSACheckValue.set(True)
 worldWithoutUSACheck = tk.Checkbutton( mainWindow, var=worldWithoutUSACheckValue, bg=mybg ).grid( row=nRows, column=0 )
 plotLabel = tk.Label( mainWindow, text="World Without USA", font=myFont, fg="black", bg=mybg, width=countryLabelWidth, anchor="w" )
 plotLabel.grid( row=nRows, column=1 )
@@ -334,8 +335,8 @@ nRows += 1
 
 # Cases, Deaths, and Deathrate scale options
 cddCheckValue = tk.BooleanVar()
-cddCheckValue.set(True)
-#print( "cddCheckValue:",cddCheckValue.get() )
+#cddCheckValue.set(True)
+cddCheckValue.set( defaultCDD )
 cddCheck = tk.Checkbutton( mainWindow, var=cddCheckValue, bg=mybg ).grid( row=nRows, column=0 )
 plotLabel = tk.Label( mainWindow, text="Cases, Deaths, DeathRates:", font=myFont, fg="black", bg=mybg, width=countryLabelWidth, anchor="w" )
 plotLabel.grid( row=nRows, column=1 )
@@ -370,7 +371,8 @@ dayAverageCheck = [None]*3
 dayAverageCheckValue = [None]*3
 for iCol in range( len(dayAverageCheck) ):
     dayAverageCheckValue[iCol] = tk.BooleanVar()
-    dayAverageCheckValue[iCol].set(False)
+#    dayAverageCheckValue[iCol].set(False)
+    dayAverageCheckValue[iCol].set( defaultAvgOpts[iCol] )
     dayAverageCheck[iCol] = tk.Checkbutton( mainWindow, var=dayAverageCheckValue[iCol], bg=mybg )
     dayAverageCheck[iCol].grid( row=nRows, column=( iCol*2 ) )
     labelText = str( ((iCol+1)*2+3) ) + "-day Average"
