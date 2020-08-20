@@ -22,7 +22,6 @@ cddColors=[ 'green', 'red', 'orange' ]      # default daily average plot colors
 # Plots cumulative cases, deaths, and deathrates
 def cddPlots( iFig, x, ys, colors, labels, linlog ):
     plt.figure( num=iFig, figsize=(plotWidth8, plotHeight) )
-    iFig += 1
     plt.xticks(rotation=45)
     if( linlog == 'linear' ): plt.ylim(0,max(ys[0])*1.05)
     plt.grid()
@@ -101,11 +100,6 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
         all_states_population.append( state_Population )
         all_states_deathrates.append( state_deathrates )
     all_dates = state_dates
-
-#    plotWidth = 8.0                             # default plot width
-#    plotHeight = 6.0                            # default plot height
-#    averageColor=[ 'red', 'magenta', 'orange' ] # default daily average plot colors
-#    cddColors=[ 'green', 'red', 'orange' ]       # default daily average plot colors
 
     # Now convert string dates to python date objects using numpy
     # This will allow nice formatting of the date axis
@@ -280,7 +274,7 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
     return
 
 ############################################################
-# Gets data every time it is called. The GUI depends depends on the states listed
+# Gets data every time it is called. The GUI depends on the states listed
 # in the data the first time the data is retrieved. Subsequent retrievals will not
 # change the GUI. If states are added to the data between data retrievals the results
 # of the plots may be mislabeled.
