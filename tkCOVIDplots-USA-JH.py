@@ -196,7 +196,7 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
                     for deaths1,deaths2 in zip( trimmed_deaths[:-1], trimmed_deaths[1:] ):
                         new_deaths.append( deaths2 - deaths1 )
                     deathLabel=state+' New Deaths'
-                    dailyPlots( iFig, trimmed_dates, new_deaths, myAverageCheck, caseLabel, myNegCheck )
+                    dailyPlots( iFig, trimmed_dates, new_deaths, myAverageCheck, deathLabel, myNegCheck )
                     iFig += 1
 
                 # Break iState loop
