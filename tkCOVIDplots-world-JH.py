@@ -104,7 +104,6 @@ def doPlots( myCasesData, myDeathsData, myCountries, myCountriesCheck, mycddChec
         all_countries_deaths.append( country_deaths )
         all_countries_deathrates.append( country_deathrates )
     all_dates = country_dates
-
     # Now convert string dates to python date objects using numpy
     # This will allow nice formatting of the date axis
     all_dates = mdates.num2date( mdates.datestr2num(all_dates) )
@@ -113,7 +112,7 @@ def doPlots( myCasesData, myDeathsData, myCountries, myCountriesCheck, mycddChec
     for country in finalDesiredCountries:
         for iCountry in range(len(myCountries)):
             if ( country == myCountries[iCountry] ):
-#                sys.stdout.write( "\nCountry: {:s}\n".format(country) )
+                sys.stdout.write( "\nCountry: {:s}\n".format(country) )
                 trimmed_dates=[]
                 trimmed_cases=[]
                 trimmed_deaths=[]
@@ -191,23 +190,23 @@ def doPlots( myCasesData, myDeathsData, myCountries, myCountriesCheck, mycddChec
                 cddPlots( iFig, all_dates, [ world_cases, world_deaths, world_deathrates ], cddColors, labels, 'log' )
                 iFig += 1
 
-            # New cases chart
-            if ( myCasesCheck.get() ):
-                new_cases = [world_cases[0]]
-                for cases1,cases2 in zip( world_cases[0:-1], world_cases[1:] ):
-                    new_cases.append( cases2 - cases1 )
-                caseLabel='World w/o USA New Cases'
-                dailyPlots( iFig, all_dates, new_cases, myAverageCheck, caseLabel, myNegCheck )
-                iFig += 1
-                
-            # New deaths chart
-            if ( myDeathsCheck.get() ):
-                new_deaths = [world_deaths[0]]
-                for deaths1,deaths2 in zip( world_deaths[:-1], world_deaths[1:] ):
-                    new_deaths.append( deaths2 - deaths1 )
-                deathLabel='World w/o USA New Deaths'
-                dailyPlots( iFig, all_dates, new_deaths, myAverageCheck, deathLabel, myNegCheck )
-                iFig += 1
+        # New cases chart
+        if ( myCasesCheck.get() ):
+            new_cases = [world_cases[0]]
+            for cases1,cases2 in zip( world_cases[0:-1], world_cases[1:] ):
+                new_cases.append( cases2 - cases1 )
+            caseLabel='World w/o USA New Cases'
+            dailyPlots( iFig, all_dates, new_cases, myAverageCheck, caseLabel, myNegCheck )
+            iFig += 1
+            
+        # New deaths chart
+        if ( myDeathsCheck.get() ):
+            new_deaths = [world_deaths[0]]
+            for deaths1,deaths2 in zip( world_deaths[:-1], world_deaths[1:] ):
+                new_deaths.append( deaths2 - deaths1 )
+            deathLabel='World w/o USA New Deaths'
+            dailyPlots( iFig, all_dates, new_deaths, myAverageCheck, deathLabel, myNegCheck )
+            iFig += 1
 
     plt.show()
 
