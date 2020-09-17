@@ -17,6 +17,10 @@ check boxes. Everytime you click the doPlots button all plots are
 sent to the screen at the same time. You must close each plot individually. 
 You can refresh the data by checking the Refresh Data checkbox.
 
+For the USA plots defaults can be specified in a file called covidDefaults.py.
+If this file exists, then the values specified in that file will be the default.
+See the covidDefaults in the repo for an example.
+
 Since there are already so many of these COVID-19 plotters available
 I make no copyright claim. You are free to use, modify, pass around,
 incorporate without licensing issues.

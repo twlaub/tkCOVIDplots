@@ -9,8 +9,8 @@ import matplotlib.dates as mdates
 
 
 # Setting default plotting options
-defaultStates = ( "New Mexico", "Texas" )   # default desired states
-defaultAvgOpts = ( False, True, False )     # default daily averages
+defaultStates = [ "New Mexico", "Texas" ]   # default desired states
+defaultAvgOpts = [ False, True, False ]     # default daily averages
 defaultCDD = False                          # default cases, deaths, deathrates
 plotWidth8 = 8.0                            # default plot width
 plotWidth10 = 10.0                          # default plot width
@@ -295,6 +295,17 @@ def getData(dataURL,dataFile):
 
 # Silence warning about leaving too many plots open
 plt.rcParams.update({'figure.max_open_warning': 0})
+
+# Look for defaults file and import if it exists
+# Will override hardwired defaults at top of script
+try:
+    defaultFile = open("covidDefaults.py")
+    print( defaultStates )
+    from covidDefaults import *
+    import covidDefaults
+    print( defaultStates )
+except IOError:
+    pass
 
 # Create the main window
 mybg="light blue"
