@@ -19,6 +19,15 @@ averageColor=[ 'red', 'magenta', 'orange' ] # default daily average plot colors
 cddColors=[ 'green', 'red', 'orange' ]      # default daily average plot colors
 
 ############################################################
+# Sorts two list by list1 and returns sorted lists
+def sortLists( list1, list2 ):
+    temp = zip(list1,list2)
+    sorted_temp = sorted(temp)
+    sorted1 = [ x for x,y in sorted_temp ]
+    sorted2 = [ y for x,y in sorted_temp ]
+    return sorted1,sorted2
+
+############################################################
 # Plots cumulative cases, deaths, and deathrates
 def cddPlots( iFig, x, ys, colors, labels, linlog ):
     plt.figure( num=iFig, figsize=(plotWidth8, plotHeight) )
@@ -70,7 +79,7 @@ def dayAveraging( mynDays, myList ):
 ############################################################
 #  Code for what the "Show Plots" button does
 ############################################################
-def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLogCheck, myCasesCheck, myDeathsCheck, myAverageCheck, myAllStatesCases, myAllStatesDeaths, myNegCheck ):
+def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLogCheck, myCasesCheck, myDeathsCheck, myAverageCheck, myAllStatesCases, myAllStatesDeaths, myNegCheck, myAllStatesSort ):
     # Get desired states
     finalDesiredStates = []
     for iState in range( len(myStatesCheck) ):
@@ -224,14 +233,30 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
         plt.grid(axis='y')
         plt.ylabel('Total Cases')
         plt.xticks(rotation=90)
-        plt.bar( myStates, allStatesCases )
+        allStatesCasesSorted = [ x for x in allStatesCases ]
+        myStatesSorted = [ x for x in myStates ]
+        if ( myAllStatesSort.get() ):
+#            temp = zip(allStatesCasesSorted,myStatesSorted)
+#            sorted_temp = sorted(temp)
+#            allStatesCasesSorted = [ x for x,y in sorted_temp ]
+#            myStatesSorted = [ y for x,y in sorted_temp ]
+            allStatesCasesSorted,myStatesSorted = sortLists( allStatesCases,myStates )
+        plt.bar( myStatesSorted, allStatesCasesSorted )
         plt.tight_layout()
         plt.figure(num=iFig,figsize=(plotWidth10, plotHeight))
         iFig += 1
         plt.grid(axis='y')
         plt.ylabel('Cases per 100,000')
         plt.xticks(rotation=90)
-        plt.bar( myStates, allStatesCasesPerCap )
+        allStatesCasesPerCapSorted = [ x for x in allStatesCasesPerCap ]
+        myStatesSorted = [ x for x in myStates ]
+        if ( myAllStatesSort.get() ):
+            allStatesCasesPerCapSorted,myStatesSorted = sortLists( allStatesCasesPerCap,myStates )
+#            temp = zip(allStatesCasesPerCapSorted,myStatesSorted)
+#            sorted_temp = sorted(temp)
+#            allStatesCasesPerCapSorted = [ x for x,y in sorted_temp ]
+#            myStatesSorted = [ y for x,y in sorted_temp ]
+        plt.bar( myStatesSorted, allStatesCasesPerCapSorted )
         plt.tight_layout()
 
     if ( myAllStatesDeaths.get() ):
@@ -251,14 +276,30 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
         plt.grid(axis='y')
         plt.ylabel('Total Deaths')
         plt.xticks(rotation=90)
-        plt.bar( myStates, allStatesDeaths )
+        allStatesDeathsSorted = [ x for x in allStatesDeaths ]
+        myStatesSorted = [ x for x in myStates ]
+        if ( myAllStatesSort.get() ):
+            allStatesDeathsSorted,myStatesSorted = sortLists( allStatesDeaths,myStates )
+#            temp = zip(allStatesDeathsSorted,myStatesSorted)
+#            sorted_temp = sorted(temp)
+#            allStatesDeathsSorted = [ x for x,y in sorted_temp ]
+#            myStatesSorted = [ y for x,y in sorted_temp ]
+        plt.bar( myStatesSorted, allStatesDeathsSorted )
         plt.tight_layout()
         plt.figure(num=iFig,figsize=(plotWidth10, plotHeight))
         iFig += 1
         plt.grid(axis='y')
         plt.ylabel('Deaths per 100,000')
         plt.xticks(rotation=90)
-        plt.bar( myStates, allStatesDeathsPerCap )
+        allStatesDeathsPerCapSorted = [ x for x in allStatesDeathsPerCap ]
+        myStatesSorted = [ x for x in myStates ]
+        if ( myAllStatesSort.get() ):
+            allStatesDeathsPerCapSorted,myStatesSorted = sortLists( allStatesDeathsPerCap,myStates )
+#            temp = zip(allStatesDeathsPerCapSorted,myStatesSorted)
+#            sorted_temp = sorted(temp)
+#            allStatesDeathsPerCapSorted = [ x for x,y in sorted_temp ]
+#            myStatesSorted = [ y for x,y in sorted_temp ]
+        plt.bar( myStatesSorted, allStatesDeathsPerCapSorted )
         plt.tight_layout()
         # DeathRates
         plt.figure(num=iFig,figsize=(plotWidth10, plotHeight))
@@ -266,7 +307,14 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
         plt.grid(axis='y')
         plt.ylabel('Deathrate %')
         plt.xticks(rotation=90)
-        plt.bar( myStates, allStatesDeathrates )
+        allStatesDeathratesSorted = [ x for x in allStatesDeathrates ]
+        myStatesSorted = [ x for x in myStates ]
+        if ( myAllStatesSort.get() ):
+            temp = zip(allStatesDeathratesSorted,myStatesSorted)
+            sorted_temp = sorted(temp)
+            allStatesDeathratesSorted = [ x for x,y in sorted_temp ]
+            myStatesSorted = [ y for x,y in sorted_temp ]
+        plt.bar( myStatesSorted, allStatesDeathratesSorted )
         plt.tight_layout()
 
     plt.show()
@@ -461,6 +509,12 @@ allStatesDeathsCheck = tk.Checkbutton( mainWindow, var=allStatesDeathsValue, bg=
 allStatesDeathsCheck.grid( row=nRows, column=2 )
 allStatesDeathsLabel = tk.Label( mainWindow, text="All States Deaths", font=myFont, fg="black", bg=mybg, width=stateLabelWidth, anchor="w" )
 allStatesDeathsLabel.grid( row=nRows, column=3 )
+allStatesSortValue = tk.BooleanVar()
+allStatesSortValue.set(True)
+allStatesSortCheck = tk.Checkbutton( mainWindow, var=allStatesSortValue, bg=mybg )
+allStatesSortCheck.grid( row=nRows, column=4 )
+allStatesSortLabel = tk.Label( mainWindow, text="Sorted", font=myFont, fg="black", bg=mybg, width=stateLabelWidth, anchor="w" )
+allStatesSortLabel.grid( row=nRows, column=5 )
 nRows += 1
 # Add check box to suppress negatives
 negCheckValue = tk.BooleanVar()
@@ -473,7 +527,7 @@ nRows += 1
 
 # Add go button
 goButton = tk.Button( mainWindow, text="Show Plots", font=myFont, fg="black", bg=mybg, \
-    command=lambda:doPlots( JHCases_df, JHDeaths_df, States, statesCheckValue, usCheckValue, cddCheckValue, linearCheckValue, logCheckValue, casesCheckValue, deathsCheckValue, dayAverageCheckValue, allStatesCasesValue, allStatesDeathsValue, negCheckValue ) )
+    command=lambda:doPlots( JHCases_df, JHDeaths_df, States, statesCheckValue, usCheckValue, cddCheckValue, linearCheckValue, logCheckValue, casesCheckValue, deathsCheckValue, dayAverageCheckValue, allStatesCasesValue, allStatesDeathsValue, negCheckValue, allStatesSortValue ) )
 goButton.grid( row=nRows, column=5 )
 nRows += 1
 
