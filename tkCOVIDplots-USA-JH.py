@@ -214,6 +214,7 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
     # Collect data for all states cases or deaths
 #    plotWidth=10
     if ( myAllStatesCases.get() ):
+        us_population = sum(all_states_population)
         allStatesCases = []
         allStatesCasesPerCap = []
         for iState in range( len(myStates) ):
@@ -236,11 +237,9 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
         allStatesCasesSorted = [ x for x in allStatesCases ]
         myStatesSorted = [ x for x in myStates ]
         if ( myAllStatesSort.get() ):
-#            temp = zip(allStatesCasesSorted,myStatesSorted)
-#            sorted_temp = sorted(temp)
-#            allStatesCasesSorted = [ x for x,y in sorted_temp ]
-#            myStatesSorted = [ y for x,y in sorted_temp ]
             allStatesCasesSorted,myStatesSorted = sortLists( allStatesCases,myStates )
+        text = "Total US Cases: {:d}".format( us_cases[-1] )
+        plt.text(0.5, 0.95*allStatesCasesSorted[-1], text, fontsize=12 )
         plt.bar( myStatesSorted, allStatesCasesSorted )
         plt.tight_layout()
         plt.figure(num=iFig,figsize=(plotWidth10, plotHeight))
@@ -252,10 +251,8 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
         myStatesSorted = [ x for x in myStates ]
         if ( myAllStatesSort.get() ):
             allStatesCasesPerCapSorted,myStatesSorted = sortLists( allStatesCasesPerCap,myStates )
-#            temp = zip(allStatesCasesPerCapSorted,myStatesSorted)
-#            sorted_temp = sorted(temp)
-#            allStatesCasesPerCapSorted = [ x for x,y in sorted_temp ]
-#            myStatesSorted = [ y for x,y in sorted_temp ]
+        allStatesCasesPerCapSorted.append( us_cases[-1]/us_population*100000. )
+        myStatesSorted.append( "United States" ) 
         plt.bar( myStatesSorted, allStatesCasesPerCapSorted )
         plt.tight_layout()
 
@@ -280,10 +277,8 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
         myStatesSorted = [ x for x in myStates ]
         if ( myAllStatesSort.get() ):
             allStatesDeathsSorted,myStatesSorted = sortLists( allStatesDeaths,myStates )
-#            temp = zip(allStatesDeathsSorted,myStatesSorted)
-#            sorted_temp = sorted(temp)
-#            allStatesDeathsSorted = [ x for x,y in sorted_temp ]
-#            myStatesSorted = [ y for x,y in sorted_temp ]
+        text = "Total US Deaths: {:d}".format( us_deaths[-1] )
+        plt.text(0.5, 0.95*allStatesDeathsSorted[-1], text, fontsize=12 )
         plt.bar( myStatesSorted, allStatesDeathsSorted )
         plt.tight_layout()
         plt.figure(num=iFig,figsize=(plotWidth10, plotHeight))
@@ -295,10 +290,8 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
         myStatesSorted = [ x for x in myStates ]
         if ( myAllStatesSort.get() ):
             allStatesDeathsPerCapSorted,myStatesSorted = sortLists( allStatesDeathsPerCap,myStates )
-#            temp = zip(allStatesDeathsPerCapSorted,myStatesSorted)
-#            sorted_temp = sorted(temp)
-#            allStatesDeathsPerCapSorted = [ x for x,y in sorted_temp ]
-#            myStatesSorted = [ y for x,y in sorted_temp ]
+        allStatesDeathsPerCapSorted.append( us_deaths[-1]/us_population*100000. )
+        myStatesSorted.append( "United States" ) 
         plt.bar( myStatesSorted, allStatesDeathsPerCapSorted )
         plt.tight_layout()
         # DeathRates
@@ -314,6 +307,8 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
             sorted_temp = sorted(temp)
             allStatesDeathratesSorted = [ x for x,y in sorted_temp ]
             myStatesSorted = [ y for x,y in sorted_temp ]
+        allStatesDeathratesSorted.append( us_deathrates[-1] )
+        myStatesSorted.append( "United States" ) 
         plt.bar( myStatesSorted, allStatesDeathratesSorted )
         plt.tight_layout()
 
@@ -348,10 +343,10 @@ plt.rcParams.update({'figure.max_open_warning': 0})
 # Will override hardwired defaults at top of script
 try:
     defaultFile = open("covidDefaults.py")
-    print( defaultStates )
+#    print( defaultStates )
     from covidDefaults import *
     import covidDefaults
-    print( defaultStates )
+#    print( defaultStates )
 except IOError:
     pass
 
