@@ -277,7 +277,7 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
         myStatesSorted = [ x for x in myStates ]
         if ( myAllStatesSort.get() ):
             allStatesDeathsSorted,myStatesSorted = sortLists( allStatesDeaths,myStates )
-        text = "Total US Deaths: {:d}".format( us_deaths[-1] )
+        text = "Total US Deaths: {:d}".format( int(us_deaths[-1]) )
         plt.text(0.5, 0.95*allStatesDeathsSorted[-1], text, fontsize=12 )
         plt.bar( myStatesSorted, allStatesDeathsSorted )
         plt.tight_layout()
