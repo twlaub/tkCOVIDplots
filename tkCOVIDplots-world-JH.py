@@ -13,7 +13,8 @@ defaultCDD = False                          # default cases, deaths, deathrates
 plotWidth = 8.0                             # default plot width
 plotHeight = 6.0                            # default plot height
 averageColor=[ 'red', 'magenta', 'orange' ] # default daily average plot colors
-cddColors=[ 'green', 'red', 'orange' ]      # default daily average plot colors
+cddColors1=[ 'green', 'red',    'orange' ]      # default daily average plot colors
+cddColors2=[ 'lime',  'salmon', 'orangered' ]      # default daily average plot colors
 
 ############################################################
 # Plots cumulative cases, deaths, and deathrates
@@ -68,7 +69,7 @@ def dayAveraging( mynDays, myList ):
 ############################################################
 #  Code for what the doPlots button does
 ############################################################
-def doPlots( myCasesData, myDeathsData, myCountries, myCountriesCheck, mycddCheck, myLinearCheck, myLogCheck, myCasesCheck, myDeathsCheck, myAverageCheck, myWorldCheck ):
+def doPlots( myCasesData, myDeathsData, myCountries, myCountriesCheck, mycddCheck, myLinearCheck, myLogCheck, myCasesCheck, myDeathsCheck, myAverageCheck, myWorldCheck, myWorldWithoutUSACheck ):
     # dummy negcheck
     myNegCheck = tk.BooleanVar()
     myNegCheck.set(True)
@@ -112,7 +113,7 @@ def doPlots( myCasesData, myDeathsData, myCountries, myCountriesCheck, mycddChec
     for country in finalDesiredCountries:
         for iCountry in range(len(myCountries)):
             if ( country == myCountries[iCountry] ):
-                sys.stdout.write( "\nCountry: {:s}\n".format(country) )
+#                sys.stdout.write( "\nCountry: {:s}\n".format(country) )
                 trimmed_dates=[]
                 trimmed_cases=[]
                 trimmed_deaths=[]
@@ -133,11 +134,11 @@ def doPlots( myCasesData, myDeathsData, myCountries, myCountriesCheck, mycddChec
                     labels = [ caseLabel, deathLabel, rateLabel ]
                     # Linear
                     if ( myLinearCheck.get() ):
-                        cddPlots( iFig, trimmed_dates, [ trimmed_cases, trimmed_deaths, trimmed_deathrate ], cddColors, labels, 'linear' )
+                        cddPlots( iFig, trimmed_dates, [ trimmed_cases, trimmed_deaths, trimmed_deathrate ], cddColors1, labels, 'linear' )
                         iFig += 1
                     # Semilog
                     if ( myLogCheck.get() ):
-                        cddPlots( iFig, trimmed_dates, [ trimmed_cases, trimmed_deaths, trimmed_deathrate ], cddColors, labels, 'log' )
+                        cddPlots( iFig, trimmed_dates, [ trimmed_cases, trimmed_deaths, trimmed_deathrate ], cddColors1, labels, 'log' )
                         iFig += 1
                 
                 # Country new cases chart
@@ -161,52 +162,106 @@ def doPlots( myCasesData, myDeathsData, myCountries, myCountriesCheck, mycddChec
                 # Break iCountry loop
                 break
 
-    if ( myWorldCheck.get() ):
-#       Sum for world total (less US)
+    if ( myWorldCheck.get() or myWorldWithoutUSACheck.get() ):
+#       Sum for world and world without US
         world_cases = [0.]*len(all_dates)
         world_deaths = [0.]*len(all_dates)
         world_deathrates = [0.]*len(all_dates)
+        us_cases = [0.]*len(all_dates)
+        us_deaths = [0.]*len(all_dates)
+        us_deathrates = [0.]*len(all_dates)
+        world_withoutUS_cases = [0.]*len(all_dates)
+        world_withoutUS_deaths = [0.]*len(all_dates)
+        world_withoutUS_deathrates = [0.]*len(all_dates)
         for iDate in range( len(all_dates) ):
             for iCountry in range( len(myCountries) ):
                 world_cases[iDate] += all_countries_cases[iCountry][iDate]
                 world_deaths[iDate] += all_countries_deaths[iCountry][iDate]
+                if ( myCountries[iCountry] == 'US' ):
+#                    print ('found US')
+                    us_cases[iDate] = all_countries_cases[iCountry][iDate]
+                    us_deaths[iDate] = all_countries_deaths[iCountry][iDate]
+#                    print ('  us cases', iDate, us_cases[iDate])
+#                    print ('  us deaths', iDate, us_deaths[iDate])
+                world_withoutUS_cases[iDate] = world_cases[iDate] - us_cases[iDate]
+                world_withoutUS_deaths[iDate] = world_deaths[iDate] - us_deaths[iDate]
+#                print ( ' ' )
+#                print (' iDate, world, us , world w/o us cases: ', iDate, world_cases[iDate], us_cases[iDate], world_withoutUS_cases[iDate] )
+#                print (' iDate, world, us , world w/o us deaths:', iDate, world_deaths[iDate], us_deaths[iDate], world_withoutUS_deaths[iDate] )
             if ( world_cases[iDate] != 0 ): world_deathrates[iDate] = float(world_deaths[iDate])/float(world_cases[iDate])*100.
-#        for iDate in range( len(all_dates) ):
-#            world_cases[iDate] = sum( all_countries_cases[0:len(myCountries)][iDate] )
-#            world_deaths[iDate] = sum( all_countries_deaths[0:len(myCountries)][iDate] )
-#            if ( world_cases[iDate] != 0 ): world_deathrates[iDate] = float(world_deaths[iDate])/float(world_cases[iDate])*100.
+            if ( world_withoutUS_cases[iDate] != 0 ): world_withoutUS_deathrates[iDate] = float(world_withoutUS_deaths[iDate])/float(world_withoutUS_cases[iDate])*100.
 
         if ( mycddCheck.get() ):
-            caseLabel='World w/o USA confirmed, number'
-            deathLabel='World w/o USA deaths, number'
-            rateLabel='World w/o USA deathrate, %'
-            labels = [ caseLabel, deathLabel, rateLabel ]
             # Linear
-            if ( myLinearCheck.get() ):
-                cddPlots( iFig, all_dates, [ world_cases, world_deaths, world_deathrates ], cddColors, labels, 'linear' )
-                iFig += 1
+            if ( myWorldCheck.get() ):
+                caseLabel='World confirmed, number'
+                deathLabel='World deaths, number'
+                rateLabel='World deathrate, %'
+                labels = [ caseLabel, deathLabel, rateLabel ]
+                if ( myLinearCheck.get() ):
+                    cddPlots( iFig, all_dates, [ world_cases, world_deaths, world_deathrates ], cddColors1, labels, 'linear' )
+#                    iFig += 1
+            if ( myWorldWithoutUSACheck.get() ):
+                caseLabel='World w/o USA confirmed, number'
+                deathLabel='World w/o USA deaths, number'
+                rateLabel='World w/o USA deathrate, %'
+                labels = [ caseLabel, deathLabel, rateLabel ]
+                if ( myLinearCheck.get() ):
+                    cddPlots( iFig, all_dates, [ world_withoutUS_cases, world_withoutUS_deaths, world_withoutUS_deathrates ], cddColors2, labels, 'linear' )
+            iFig += 1
+
             # Semilog
-            if ( myLogCheck.get() ):
-                cddPlots( iFig, all_dates, [ world_cases, world_deaths, world_deathrates ], cddColors, labels, 'log' )
-                iFig += 1
+            if ( myWorldCheck.get() ):
+                caseLabel='World confirmed, number'
+                deathLabel='World deaths, number'
+                rateLabel='World deathrate, %'
+                labels = [ caseLabel, deathLabel, rateLabel ]
+                if ( myLogCheck.get() ):
+                    cddPlots( iFig, all_dates, [ world_cases, world_deaths, world_deathrates ], cddColors1, labels, 'log' )
+#                    iFig += 1
+            if ( myWorldWithoutUSACheck.get() ):
+                caseLabel='World w/o USA confirmed, number'
+                deathLabel='World w/o USA deaths, number'
+                rateLabel='World w/o USA deathrate, %'
+                labels = [ caseLabel, deathLabel, rateLabel ]
+                # Semilog
+                if ( myLogCheck.get() ):
+                    cddPlots( iFig, all_dates, [ world_withoutUS_cases, world_withoutUS_deaths, world_withoutUS_deathrates ], cddColors2, labels, 'log' )
+            iFig += 1
 
         # New cases chart
         if ( myCasesCheck.get() ):
-            new_cases = [world_cases[0]]
-            for cases1,cases2 in zip( world_cases[0:-1], world_cases[1:] ):
-                new_cases.append( cases2 - cases1 )
-            caseLabel='World w/o USA New Cases'
-            dailyPlots( iFig, all_dates, new_cases, myAverageCheck, caseLabel, myNegCheck )
-            iFig += 1
+            if ( myWorldCheck.get() ):
+                new_cases = [world_cases[0]]
+                for cases1,cases2 in zip( world_cases[0:-1], world_cases[1:] ):
+                    new_cases.append( cases2 - cases1 )
+                caseLabel='World New Cases'
+                dailyPlots( iFig, all_dates, new_cases, myAverageCheck, caseLabel, myNegCheck )
+                iFig += 1
+            if ( myWorldWithoutUSACheck.get() ):
+                new_cases = [world_withoutUS_cases[0]]
+                for cases1,cases2 in zip( world_withoutUS_cases[0:-1], world_withoutUS_cases[1:] ):
+                    new_cases.append( cases2 - cases1 )
+                caseLabel='World w/o USA New Cases'
+                dailyPlots( iFig, all_dates, new_cases, myAverageCheck, caseLabel, myNegCheck )
+                iFig += 1
             
         # New deaths chart
         if ( myDeathsCheck.get() ):
-            new_deaths = [world_deaths[0]]
-            for deaths1,deaths2 in zip( world_deaths[:-1], world_deaths[1:] ):
-                new_deaths.append( deaths2 - deaths1 )
-            deathLabel='World w/o USA New Deaths'
-            dailyPlots( iFig, all_dates, new_deaths, myAverageCheck, deathLabel, myNegCheck )
-            iFig += 1
+            if ( myWorldCheck.get() ):
+                new_deaths = [world_deaths[0]]
+                for deaths1,deaths2 in zip( world_deaths[:-1], world_deaths[1:] ):
+                    new_deaths.append( deaths2 - deaths1 )
+                deathLabel='World New Deaths'
+                dailyPlots( iFig, all_dates, new_deaths, myAverageCheck, deathLabel, myNegCheck )
+                iFig += 1
+            if ( myWorldWithoutUSACheck.get() ):
+                new_deaths = [world_withoutUS_deaths[0]]
+                for deaths1,deaths2 in zip( world_withoutUS_deaths[:-1], world_withoutUS_deaths[1:] ):
+                    new_deaths.append( deaths2 - deaths1 )
+                deathLabel='World w/o USA New Deaths'
+                dailyPlots( iFig, all_dates, new_deaths, myAverageCheck, deathLabel, myNegCheck )
+                iFig += 1
 
     plt.show()
 
@@ -314,13 +369,19 @@ for iStart in range(0,nCountries,nColsCountries):
     nRows += 1
 nRows += 1
 
-# Add World sum checkbox
+# Add World sum checkboxes
+worldCheckValue = tk.BooleanVar()
+#worldCheckValue.set(False)
+worldCheckValue.set(True)
+worldCheck = tk.Checkbutton( mainWindow, var=worldCheckValue, bg=mybg ).grid( row=nRows, column=0 )
+plotLabel = tk.Label( mainWindow, text="World", font=myFont, fg="black", bg=mybg, width=countryLabelWidth, anchor="w" )
+plotLabel.grid( row=nRows, column=1 )
 worldWithoutUSACheckValue = tk.BooleanVar()
 #worldWithoutUSACheckValue.set(False)
 worldWithoutUSACheckValue.set(True)
-worldWithoutUSACheck = tk.Checkbutton( mainWindow, var=worldWithoutUSACheckValue, bg=mybg ).grid( row=nRows, column=0 )
+worldWithoutUSACheck = tk.Checkbutton( mainWindow, var=worldWithoutUSACheckValue, bg=mybg ).grid( row=nRows, column=2 )
 plotLabel = tk.Label( mainWindow, text="World Without USA", font=myFont, fg="black", bg=mybg, width=countryLabelWidth, anchor="w" )
-plotLabel.grid( row=nRows, column=1 )
+plotLabel.grid( row=nRows, column=3 )
 nRows += 1
 
 # Add Plotting options
@@ -381,7 +442,7 @@ nRows += 1
 
 # Add go button
 goButton = tk.Button( mainWindow, text="Show Plots", font=myFont, fg="black", bg=mybg, \
-    command=lambda:doPlots( JHCases_df, JHDeaths_df, Countries, countriesCheckValue, cddCheckValue, linearCheckValue, logCheckValue, casesCheckValue, deathsCheckValue, dayAverageCheckValue, worldWithoutUSACheckValue ) )
+    command=lambda:doPlots( JHCases_df, JHDeaths_df, Countries, countriesCheckValue, cddCheckValue, linearCheckValue, logCheckValue, casesCheckValue, deathsCheckValue, dayAverageCheckValue, worldCheckValue, worldWithoutUSACheckValue ) )
 goButton.grid( row=nRows, column=5 )
 nRows += 1
 
