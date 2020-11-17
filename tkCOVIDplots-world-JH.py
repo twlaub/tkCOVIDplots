@@ -42,16 +42,18 @@ def dailyPlots( iFig, x, y, averageCheck, plotLabel, negCheck ):
     # Get 5,7,9-day moving averages
     for iDay in range(3):
         if ( averageCheck[iDay].get() ):
-            dayAverage = dayAveraging( (2*iDay+5), y )
-            labelText = str((2*iDay+5))+"-day"
+            dayAverage,slope,ys = dayAveraging( (2*iDay+5), x, y )
+            labelText = str((2*iDay+5))+"-day, slope = "+str(round(slope,2))
             plt.plot( x, dayAverage, averageColor[iDay], label=labelText )
+            xs = [ x[-(2*iDay+5)], x[-1] ]
+            plt.plot( xs, ys, "black" )
     plt.legend(loc="upper left")
     plt.grid(axis='y')
     plt.tight_layout()
     if ( negCheck.get() ): plt.ylim(bottom=0)
 
 ############################################################
-def dayAveraging( mynDays, myList ):
+def dayAveraging( mynDays, myX, myList ):
     halfDays = mynDays//2  # integer division
     averagedDayList=[]
     # Handle the beginning of the list where there is not a full nDays data to average
@@ -63,7 +65,14 @@ def dayAveraging( mynDays, myList ):
     # Handle the end of the list where there is not a full nDays data to average
     for i in range( halfDays,0,-1 ):
         averagedDayList.append( float(sum( myList[(len(myList)-halfDays-i):len(myList)] ))/float(i+halfDays) )
-    return averagedDayList
+    # calculate slope of trendline using numpy
+    deltaDays = myX[-1] - myX[0]
+    offsetDays = int( deltaDays.total_seconds()/86400 )
+    x = np.array( [ offsetDays+i for i in range( len(averagedDayList[-mynDays:-1]) ) ] )
+    y = np.array( averagedDayList[-mynDays:-1] )
+    slope,b = np.polyfit(x,y,1)
+    ys = [ x[0]*slope + b, x[-1]*slope + b ]
+    return averagedDayList, slope, ys
 
 
 ############################################################
