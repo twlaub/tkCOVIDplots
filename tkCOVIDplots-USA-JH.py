@@ -10,8 +10,8 @@ import plotly.express as px
 
 # State abrieviations dictionary, already sorted alphabetically by state name
 StatesToKeep = (
- 'Alaska                  '.rstrip(),
  'Alabama                 '.rstrip(),
+ 'Alaska                  '.rstrip(),
  'Arizona                 '.rstrip(),
  'Arkansas                '.rstrip(),
  'California              '.rstrip(),
@@ -66,7 +66,7 @@ StatesToKeep = (
 # State abrieviations tuple, already sorted alphabetically according to state names
 # Diamond Princess and Grand Princess may be cruise ships
 States2Letter = (
-'AK','AL','AZ','AR','CA','CO','CT','DE','DC','FL',
+'AL','AK','AZ','AR','CA','CO','CT','DE','DC','FL',
 'GA','HI','ID','IL','IN','IA','KS','KY','LA','ME',
 'MD','MA','MI','MN','MS','MO','MT','NE','NV','NH',
 'NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI',
