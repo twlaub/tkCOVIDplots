@@ -6,6 +6,72 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import plotly.express as px
+
+# State abrieviations dictionary, already sorted alphabetically by state name
+StatesToKeep = (
+ 'Alaska                  '.rstrip(),
+ 'Alabama                 '.rstrip(),
+ 'Arizona                 '.rstrip(),
+ 'Arkansas                '.rstrip(),
+ 'California              '.rstrip(),
+ 'Colorado                '.rstrip(),
+ 'Connecticut             '.rstrip(),
+ 'Delaware                '.rstrip(),
+ 'District of Columbia    '.rstrip(),
+ 'Florida                 '.rstrip(),
+ 'Georgia                 '.rstrip(),
+ 'Hawaii                  '.rstrip(),
+ 'Idaho                   '.rstrip(),
+ 'Illinois                '.rstrip(),
+ 'Indiana                 '.rstrip(),
+ 'Iowa                    '.rstrip(),
+ 'Kansas                  '.rstrip(),
+ 'Kentucky                '.rstrip(),
+ 'Louisiana               '.rstrip(),
+ 'Maine                   '.rstrip(),
+ 'Maryland                '.rstrip(),
+ 'Massachusetts           '.rstrip(),
+ 'Michigan                '.rstrip(),
+ 'Minnesota               '.rstrip(),
+ 'Mississippi             '.rstrip(),
+ 'Missouri                '.rstrip(),
+ 'Montana                 '.rstrip(),
+ 'Nebraska                '.rstrip(),
+ 'Nevada                  '.rstrip(),
+ 'New Hampshire           '.rstrip(),
+ 'New Jersey              '.rstrip(),
+ 'New Mexico              '.rstrip(),
+ 'New York                '.rstrip(),
+ 'North Carolina          '.rstrip(),
+ 'North Dakota            '.rstrip(),
+ 'Ohio                    '.rstrip(),
+ 'Oklahoma                '.rstrip(),
+ 'Oregon                  '.rstrip(),
+ 'Pennsylvania            '.rstrip(),
+ 'Rhode Island            '.rstrip(),
+ 'South Carolina          '.rstrip(),
+ 'South Dakota            '.rstrip(),
+ 'Tennessee               '.rstrip(),
+ 'Texas                   '.rstrip(),
+ 'Utah                    '.rstrip(),
+ 'Vermont                 '.rstrip(),
+ 'Virginia                '.rstrip(),
+ 'Washington              '.rstrip(),
+ 'West Virginia           '.rstrip(),
+ 'Wisconsin               '.rstrip(),
+ 'Wyoming                 '.rstrip()
+)
+
+# State abrieviations tuple, already sorted alphabetically according to state names
+# Diamond Princess and Grand Princess may be cruise ships
+States2Letter = (
+'AK','AL','AZ','AR','CA','CO','CT','DE','DC','FL',
+'GA','HI','ID','IL','IN','IA','KS','KY','LA','ME',
+'MD','MA','MI','MN','MS','MO','MT','NE','NV','NH',
+'NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI',
+'SC','SD','TN','TX','UT','VT','VA','WA','WV','WI',
+'WY' )
 
 
 # Setting default plotting options
@@ -88,7 +154,7 @@ def dayAveraging( mynDays, myX, myList ):
 ############################################################
 #  Code for what the "Show Plots" button does
 ############################################################
-def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLogCheck, myCasesCheck, myDeathsCheck, myAverageCheck, myAllStatesCases, myAllStatesDeaths, myNegCheck, myAllStatesSort ):
+def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLogCheck, myCasesCheck, myDeathsCheck, myAverageCheck, myAllStatesCases, myAllStatesDeaths, myNegCheck, myAllStatesSort, myMapCheck ):
     # Get desired states
     finalDesiredStates = []
     for iState in range( len(myStatesCheck) ):
@@ -264,6 +330,13 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
         myStatesSorted.append( "United States" ) 
         plt.bar( myStatesSorted, allStatesCasesPerCapSorted )
         plt.tight_layout()
+        # Map plot of cases and cases per cap
+        if ( myMapCheck.get() ) :
+            casesMap = px.choropleth(locations=States2Letter, locationmode="USA-states", color=allStatesCases, scope="usa", title="Cases")
+            casesMap.show()
+            casesPerCapMap = px.choropleth(locations=States2Letter, locationmode="USA-states", color=allStatesCasesPerCap, scope="usa", title="Per capita cases")
+            casesPerCapMap.show()
+        
 
     if ( myAllStatesDeaths.get() ):
         allStatesDeaths = []
@@ -320,6 +393,14 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
         myStatesSorted.append( "United States" ) 
         plt.bar( myStatesSorted, allStatesDeathratesSorted )
         plt.tight_layout()
+        # Map plot of cases and cases per cap
+        if ( myMapCheck.get() ) :
+            deathsMap = px.choropleth(locations=States2Letter, locationmode="USA-states", color=allStatesDeaths, scope="usa", title="Deaths")
+            deathsMap.show()
+            deathsPerCapMap = px.choropleth(locations=States2Letter, locationmode="USA-states", color=allStatesDeathsPerCap, scope="usa", title="Per capita deaths")
+            deathsPerCapMap.show()
+            deathRateMap = px.choropleth(locations=States2Letter, locationmode="USA-states", color=allStatesDeathrates, scope="usa", title="Death Rate")
+            deathRateMap.show()
 
     plt.show()
 
@@ -395,6 +476,11 @@ nRows += 1
 
 #Get the list of states in the states column
 States = list( JHDeaths_df['Province_State'].unique() )
+temp = [ state for state in States ]
+for state in States:
+    if ( state not in StatesToKeep ): 
+        temp.remove(state)
+States = [ state for state in temp ]
 States.sort()
 States = tuple( States )
 maxStateLength = 0
@@ -519,6 +605,12 @@ allStatesSortCheck = tk.Checkbutton( mainWindow, var=allStatesSortValue, bg=mybg
 allStatesSortCheck.grid( row=nRows, column=4 )
 allStatesSortLabel = tk.Label( mainWindow, text="Sorted", font=myFont, fg="black", bg=mybg, width=stateLabelWidth, anchor="w" )
 allStatesSortLabel.grid( row=nRows, column=5 )
+mapCheckValue = tk.BooleanVar()
+mapCheckValue.set(False)
+mapCheck = tk.Checkbutton( mainWindow, var=mapCheckValue, bg=mybg )
+mapCheck.grid( row=nRows, column=6 )
+mapCheckLabel = tk.Label( mainWindow, text="Map Plots (Browser)", font=myFont, fg="black", bg=mybg, width=stateLabelWidth, anchor="w" )
+mapCheckLabel.grid( row=nRows, column=7 )
 nRows += 1
 # Add check box to suppress negatives
 negCheckValue = tk.BooleanVar()
@@ -531,7 +623,7 @@ nRows += 1
 
 # Add go button
 goButton = tk.Button( mainWindow, text="Show Plots", font=myFont, fg="black", bg=mybg, \
-    command=lambda:doPlots( JHCases_df, JHDeaths_df, States, statesCheckValue, usCheckValue, cddCheckValue, linearCheckValue, logCheckValue, casesCheckValue, deathsCheckValue, dayAverageCheckValue, allStatesCasesValue, allStatesDeathsValue, negCheckValue, allStatesSortValue ) )
+    command=lambda:doPlots( JHCases_df, JHDeaths_df, States, statesCheckValue, usCheckValue, cddCheckValue, linearCheckValue, logCheckValue, casesCheckValue, deathsCheckValue, dayAverageCheckValue, allStatesCasesValue, allStatesDeathsValue, negCheckValue, allStatesSortValue, mapCheckValue ) )
 goButton.grid( row=nRows, column=5 )
 nRows += 1
 
