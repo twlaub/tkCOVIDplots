@@ -119,11 +119,15 @@ def dailyPlots( iFig, x, y, averageCheck, plotLabel, negCheck ):
     # Get 5,7,9-day moving averages
     for iDay in range(3):
         if ( averageCheck[iDay].get() ):
-            dayAverage,slope,ys = dayAveraging( (2*iDay+5), x, y )
-            labelText = str((2*iDay+5))+"-day, slope = "+str(round(slope,2))
+            dayAverage,slope,xs,ys = dayAveraging( (2*iDay+5), x, y )
+#            labelText = str((2*iDay+5))+"-day, slope = "+str(round(slope,2))
+            labelText = str((2*iDay+5))+"-day moving average"
             plt.plot( x, dayAverage, averageColor[iDay], label=labelText )
-            xs = [ x[-(2*iDay+5)], x[-1] ]
-            plt.plot( xs, ys, "black" )
+#            xs = [ x[-(2*iDay+5)], x[-1] ]
+            xs = [ x[-(3*(2*iDay+5))-1], x[-1] ]
+#            plt.plot( xs, ys, "black" )
+            labelText = str((3*(2*iDay+5)))+"-day, slope = "+str(round(slope,2))
+            plt.plot( xs, ys, "black", label=labelText )
     plt.legend(loc="upper left")
     plt.grid(axis='y')
     plt.tight_layout()
@@ -145,11 +149,14 @@ def dayAveraging( mynDays, myX, myList ):
     # calculate slope of trendline using numpy
     deltaDays = myX[-1] - myX[0]
     offsetDays = int( deltaDays.total_seconds()/86400 )
-    x = np.array( [ offsetDays+i for i in range( len(averagedDayList[-mynDays:-1]) ) ] )
-    y = np.array( averagedDayList[-mynDays:-1] )
+    # Careful! This assumes the total length of the data in days is more than 3 time the averaging length
+    # This is a bug that I have recognized but not fixed
+    x = np.array( [ offsetDays+i for i in range( len(averagedDayList[-(3*mynDays)-1:-1]) ) ] )
+    y = np.array( averagedDayList[-(3*mynDays)-1:-1] )
     slope,b = np.polyfit(x,y,1)
     ys = [ x[0]*slope + b, x[-1]*slope + b ]
-    return averagedDayList, slope, ys
+    xs = [ x[0], x[-1] ]
+    return averagedDayList, slope, xs, ys
 
 ############################################################
 #  Code for what the "Show Plots" button does
