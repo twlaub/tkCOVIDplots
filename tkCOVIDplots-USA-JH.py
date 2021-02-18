@@ -126,7 +126,7 @@ def dailyPlots( iFig, x, y, averageCheck, plotLabel, negCheck ):
 #            xs = [ x[-(2*iDay+5)], x[-1] ]
             xs = [ x[-(3*(2*iDay+5))-1], x[-1] ]
 #            plt.plot( xs, ys, "black" )
-            labelText = str((3*(2*iDay+5)))+"-day, slope = "+str(round(slope,2))
+            labelText = str((3*(2*iDay+5)))+"-day, slope = "+str(round(slope,2))+" /day"
             plt.plot( xs, ys, "black", label=labelText )
     plt.legend(loc="upper left")
     plt.grid(axis='y')
