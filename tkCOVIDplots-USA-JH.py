@@ -120,18 +120,51 @@ def dailyPlots( iFig, x, y, averageCheck, plotLabel, negCheck ):
     for iDay in range(3):
         if ( averageCheck[iDay].get() ):
             dayAverage,slope,xs,ys = dayAveraging( (2*iDay+5), x, y )
-#            labelText = str((2*iDay+5))+"-day, slope = "+str(round(slope,2))
             labelText = str((2*iDay+5))+"-day moving average"
             plt.plot( x, dayAverage, averageColor[iDay], label=labelText )
-#            xs = [ x[-(2*iDay+5)], x[-1] ]
             xs = [ x[-(3*(2*iDay+5))-1], x[-1] ]
-#            plt.plot( xs, ys, "black" )
-            labelText = str((3*(2*iDay+5)))+"-day, slope = "+str(round(slope,2))+" /day"
+            labelText = str((3*(2*iDay+5)))+"-day slope = "+str(round(slope,2))+" /day"
             plt.plot( xs, ys, "black", label=labelText )
     plt.legend(loc="upper left")
     plt.grid(axis='y')
     plt.tight_layout()
     if ( negCheck.get() ): plt.ylim(bottom=0)
+
+############################################################
+# Plots new cases and deaths moving averages together on one plot
+def dailyAverageDualScalePlots( iFig, x, cases, deaths, averageCheck, plotLabel, negCheck ):
+    fig,ax = plt.subplots(num=iFig,figsize=(plotWidth8, plotHeight))
+#    plt.figure(num=iFig,figsize=(plotWidth8, plotHeight))
+
+    # y-axis label and x-axis tick orientation
+    ax.set_ylabel( plotLabel+" new cases")
+    plt.xticks(rotation=45)
+
+    # Create twin object for two differen y-axis on the same plot
+    ax2 = ax.twinx()
+    ax.set_ylabel( plotLabel+" new deaths")
+
+    # Get 5,7,9-day moving averages
+    for iDay in range(3):
+        if ( averageCheck[iDay].get() ):
+            casesAverage,slope,xs,ys = dayAveraging( (2*iDay+5), x, cases )
+            deathsAverage,slope,xs,ys = dayAveraging( (2*iDay+5), x, deaths )
+            casesLabelText = "cases "+str((2*iDay+5))+"-day moving average"
+            deathsLabelText = "deaths "+str((2*iDay+5))+"-day moving average"
+            ax.plot ( x, casesAverage, "black", label=casesLabelText )
+            ax.legend( loc="upper left" )
+            ax2.plot( x, deathsAverage, "red", label=deathsLabelText )
+            ax2.legend( loc="lower right" )
+#    fig.legend(loc="upper left")
+#    fig.legend(loc="upper center")
+#    ax.legend(loc="upper left")
+#    ax2.legend(loc="upper left")
+#    plt.sublots.legend(loc="upper left")
+#    fig.grid(axis='y')
+    fig.tight_layout()
+    if ( negCheck.get() ):
+        ax.set_ylim(bottom=0)
+        ax2.set_ylim(bottom=0)
 
 ############################################################
 def dayAveraging( mynDays, myX, myList ):
@@ -161,7 +194,7 @@ def dayAveraging( mynDays, myX, myList ):
 ############################################################
 #  Code for what the "Show Plots" button does
 ############################################################
-def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLogCheck, myCasesCheck, myDeathsCheck, myAverageCheck, myAllStatesCases, myAllStatesDeaths, myNegCheck, myAllStatesSort, myMapCheck ):
+def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycddCheck, myLinearCheck, myLogCheck, myCasesCheck, myDeathsCheck, myAverageCheck, myAverageDualScaleCheck, myAllStatesCases, myAllStatesDeaths, myNegCheck, myAllStatesSort, myMapCheck ):
     # Get desired states
     finalDesiredStates = []
     for iState in range( len(myStatesCheck) ):
@@ -239,6 +272,11 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
             dailyPlots( iFig, all_dates, us_new_deaths, myAverageCheck, 'US New Deaths', myNegCheck )
             iFig += 1
 
+        # US new cases & deaths averages on one plot
+        if ( myAverageDualScaleCheck.get() and myCasesCheck.get() and myDeathsCheck.get() ):
+            dailyAverageDualScalePlots( iFig, all_dates, us_new_cases, us_new_deaths, myAverageCheck, "US", myNegCheck )
+            iFig += 1
+
     for state in finalDesiredStates:
         for iState in range(len(myStates)):
             if ( state == myStates[iState] ):
@@ -290,6 +328,11 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
                     dailyPlots( iFig, trimmed_dates, new_deaths, myAverageCheck, deathLabel, myNegCheck )
                     iFig += 1
 
+                # US new cases & deaths averages on one plot
+                if ( myAverageDualScaleCheck.get() and myCasesCheck.get() and myDeathsCheck.get() ):
+                   dailyAverageDualScalePlots( iFig, trimmed_dates, new_cases, new_deaths, myAverageCheck, state, myNegCheck )
+                   iFig += 1
+
                 # Break iState loop
                 break
 
@@ -334,7 +377,7 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
         if ( myAllStatesSort.get() ):
             allStatesCasesPerCapSorted,myStatesSorted = sortLists( allStatesCasesPerCap,myStates )
         allStatesCasesPerCapSorted.append( us_cases[-1]/us_population*100000. )
-        myStatesSorted.append( "United States" ) 
+        myStatesSorted.append( "United States" )
         plt.bar( myStatesSorted, allStatesCasesPerCapSorted )
         plt.tight_layout()
         # Map plot of cases and cases per cap
@@ -343,7 +386,7 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
             casesMap.show()
             casesPerCapMap = px.choropleth(locations=States2Letter, locationmode="USA-states", color=allStatesCasesPerCap, scope="usa", title="Per capita cases")
             casesPerCapMap.show()
-        
+
 
     if ( myAllStatesDeaths.get() ):
         allStatesDeaths = []
@@ -380,7 +423,7 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
         if ( myAllStatesSort.get() ):
             allStatesDeathsPerCapSorted,myStatesSorted = sortLists( allStatesDeathsPerCap,myStates )
         allStatesDeathsPerCapSorted.append( us_deaths[-1]/us_population*100000. )
-        myStatesSorted.append( "United States" ) 
+        myStatesSorted.append( "United States" )
         plt.bar( myStatesSorted, allStatesDeathsPerCapSorted )
         plt.tight_layout()
         # DeathRates
@@ -397,7 +440,7 @@ def doPlots( myCasesData, myDeathsData, myStates, myStatesCheck, myUSCheck, mycd
             allStatesDeathratesSorted = [ x for x,y in sorted_temp ]
             myStatesSorted = [ y for x,y in sorted_temp ]
         allStatesDeathratesSorted.append( us_deathrates[-1] )
-        myStatesSorted.append( "United States" ) 
+        myStatesSorted.append( "United States" )
         plt.bar( myStatesSorted, allStatesDeathratesSorted )
         plt.tight_layout()
         # Map plot of cases and cases per cap
@@ -485,7 +528,7 @@ nRows += 1
 States = list( JHDeaths_df['Province_State'].unique() )
 temp = [ state for state in States ]
 for state in States:
-    if ( state not in StatesToKeep ): 
+    if ( state not in StatesToKeep ):
         temp.remove(state)
 States = [ state for state in temp ]
 States.sort()
@@ -592,6 +635,12 @@ for iCol in range( len(dayAverageCheck) ):
     labelText = str( ((iCol+1)*2+3) ) + "-day Average"
     temp = tk.Label( mainWindow, text=labelText, font=myFont, fg="black", bg=mybg, width=stateLabelWidth, anchor="w" )
     temp.grid( row=nRows, column=( (iCol*2)+1 ) )
+dayAverageDualScaleValue=tk.BooleanVar()
+dayAverageDualScaleValue.set(False)
+dayAverageDualScaleCheck = tk.Checkbutton ( mainWindow, var=dayAverageDualScaleValue, bg=mybg )
+dayAverageDualScaleCheck.grid( row=nRows, column=( len(dayAverageCheck)*2 ) )
+temp = tk.Label( mainWindow, text="Averages on one plot", font=myFont, fg="black", bg=mybg, width=stateLabelWidth, anchor="w" )
+temp.grid( row=nRows, column=( len(dayAverageCheck)*2+1 ) )
 nRows += 1
 # Add check box for all states comparison
 allStatesCasesValue = tk.BooleanVar()
@@ -630,7 +679,7 @@ nRows += 1
 
 # Add go button
 goButton = tk.Button( mainWindow, text="Show Plots", font=myFont, fg="black", bg=mybg, \
-    command=lambda:doPlots( JHCases_df, JHDeaths_df, States, statesCheckValue, usCheckValue, cddCheckValue, linearCheckValue, logCheckValue, casesCheckValue, deathsCheckValue, dayAverageCheckValue, allStatesCasesValue, allStatesDeathsValue, negCheckValue, allStatesSortValue, mapCheckValue ) )
+    command=lambda:doPlots( JHCases_df, JHDeaths_df, States, statesCheckValue, usCheckValue, cddCheckValue, linearCheckValue, logCheckValue, casesCheckValue, deathsCheckValue, dayAverageCheckValue, dayAverageDualScaleValue, allStatesCasesValue, allStatesDeathsValue, negCheckValue, allStatesSortValue, mapCheckValue ) )
 goButton.grid( row=nRows, column=5 )
 nRows += 1
 
