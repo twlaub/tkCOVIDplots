@@ -142,7 +142,7 @@ def dailyAverageDualScalePlots( iFig, x, cases, deaths, averageCheck, plotLabel,
 
     # Create twin object for two differen y-axis on the same plot
     ax2 = ax.twinx()
-    ax.set_ylabel( plotLabel+" new deaths")
+    ax2.set_ylabel( plotLabel+" new deaths")
 
     # Get 5,7,9-day moving averages
     for iDay in range(3):
